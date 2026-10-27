@@ -12,17 +12,32 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class ParcAuto
- * 
+ *
  * @property int $id
  * @property string $immatriculation
  * @property string $modele
  * @property string $conducteur
  * @property Carbon $date_attribution
  * @property int $secteur
- * 
  * @property Collection|ParcKm[] $parc_kms
- *
  * @package App\Models
+ * @property string|null $date_ct
+ * @property string|null $date_rev
+ * @property string|null $date_pol
+ * @property-read int|null $parc_kms_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ParcAuto newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ParcAuto newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ParcAuto query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ParcAuto whereConducteur($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ParcAuto whereDateAttribution($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ParcAuto whereDateCt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ParcAuto whereDatePol($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ParcAuto whereDateRev($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ParcAuto whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ParcAuto whereImmatriculation($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ParcAuto whereModele($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ParcAuto whereSecteur($value)
+ * @mixin \Eloquent
  */
 class ParcAuto extends Model
 {
