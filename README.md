@@ -59,3 +59,18 @@ php artisan serve
 ## Licence
 
 Ce projet est sous licence [MIT](LICENSE).
+## Maintenance (CI/CD local)
+
+Avec Sail démarré (`vendor/bin/sail up -d`) :
+
+```bash
+sh ci-cd.sh
+```
+
+Le script met à jour les dépendances Composer et npm, propose de monter les versions majeures, rafraîchit Laravel Boost, régénère les PHPDocs des modèles (ide-helper), formate le code (Pint), puis lance le build Vite, PHPStan, Pest et les audits de sécurité. Si une mise à jour de dépendances échoue, tout est restauré.
+
+Pour que `git blame` ignore le commit de formatage Pint :
+
+```bash
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
