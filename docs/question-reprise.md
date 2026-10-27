@@ -39,19 +39,12 @@
 
 - [ ] Qu'est-ce qui appelle **`launchSMS.php`** ? Le code n'envoie quelque chose qu'à **8h** (jours ouvrés) et **20h** (vendredi, dernier jour ouvré du mois), donc il est forcément appelé au moins toutes les heures. Un cron OVH qui appelle l'URL ?
 - [ ] Qui reçoit les **3 SMS** (rapport de mapping de 8h, résultats du vendredi soir, résultats de fin de mois) ? Les numéros sont **en dur** dans le code (audit §4). Qui doit pouvoir les changer ?
-- [ ] Pourquoi **pas d'envoi en août** (`if ($date->month == 8) return;`) ? C'est une règle métier, ou un bricolage ponctuel ?
 - [ ] Le rapport de 8h **exclut le secteur 10** (`in_array($secteur->id, [10])`). Pourquoi ?
 
 ## 5. Base de données
 
-> ✅ **Confirmé :** l'appli Laravel est une réécriture d'une ancienne appli PHP. Les 22 migrations datées du `2025_05_22_132422` ont été générées à partir de la base existante (`reliese/laravel`).
-
-> ✅ **Confirmé :** l'ancienne appli ne tourne plus et ne partage pas la base. Seule l'appli Laravel utilise la base de prod.
-
-- [ ] Le code de l'ancienne appli est-il **archivé quelque part**, au cas où on aurait besoin de comprendre une règle métier d'origine ?
 - [ ] La procédure stockée **`remap_clients`** (réaffecte les clients à un secteur selon leurs coordonnées GPS) existe en prod mais **n'est appelée nulle part dans le code**. Qui la lance, quand, et pourquoi ?
 - [ ] La migration `database/migrations/after/2025_10_12_141918_delete_source_field_in_client.php` (suppression de `clients.source`) **n'a pas été appliquée en prod** : la colonne existe toujours dans le dump. Pourquoi l'avoir mise de côté ? Faut-il l'appliquer un jour ?
-- [ ] Y a-t-il des modifications faites **directement en base** (phpMyAdmin) qui n'existent pas en migration ?
 
 ## 6. Métier et utilisateurs
 
