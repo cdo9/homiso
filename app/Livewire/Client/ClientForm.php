@@ -6,6 +6,7 @@ use App\Models\Client;
 use App\Models\ClientHistory;
 use App\Models\Source;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
@@ -286,7 +287,7 @@ class ClientForm extends Component
             $client->projet = $this->projet ?? '';
             $client->signe = $this->signe ?? '';
             $client->debrief = $this->commentaire ?? '';
-            $client->date_relance = $this->date_relance ? \Carbon\Carbon::parse($this->date_relance) : null;
+            $client->date_relance = $this->date_relance ? Carbon::parse($this->date_relance) : null;
             $client->rentre_par = $this->commercial_id ?? Auth::id();
             $client->partage_avec = $this->partage_avec ?? null;
 

@@ -5,6 +5,8 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\MapController;
+use App\Http\Controllers\PoseurController;
+use App\Models\Projet;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -161,7 +163,7 @@ Route::middleware(['auth', 'blocages', 'role:directeur,admin,commercial,resp-pro
     })->name('nouveau-rendez-vous');
 
     Route::get('/rendez-vous/{id}/edit', function ($id) {
-        $rendezVous = \App\Models\Projet::findOrFail($id);
+        $rendezVous = Projet::findOrFail($id);
 
         return view('rendez-vous.edit-rendez-vous', compact('rendezVous'));
     })->name('edit-rendez-vous');
@@ -209,15 +211,15 @@ Route::middleware(['auth', 'blocages', 'role:directeur,admin'])->group(function 
         return view('commission.index', compact('commercial', 'mois', 'annee'));
     })->name('commissions');
 
-    Route::get('/poseurs', [\App\Http\Controllers\PoseurController::class, 'index'])
+    Route::get('/poseurs', [PoseurController::class, 'index'])
         ->name('poseurs');
-    Route::get('/poseurs/{poseur}/edit', [\App\Http\Controllers\PoseurController::class, 'edit'])
+    Route::get('/poseurs/{poseur}/edit', [PoseurController::class, 'edit'])
         ->name('poseurs.edit');
-    Route::post('/poseurs/{poseur}/update', [\App\Http\Controllers\PoseurController::class, 'update'])
+    Route::post('/poseurs/{poseur}/update', [PoseurController::class, 'update'])
         ->name('poseurs.update');
-    Route::get('/poseurs/create', [\App\Http\Controllers\PoseurController::class, 'create'])
+    Route::get('/poseurs/create', [PoseurController::class, 'create'])
         ->name('poseurs.create');
-    Route::post('/poseurs/post', [\App\Http\Controllers\PoseurController::class, 'post'])
+    Route::post('/poseurs/post', [PoseurController::class, 'post'])
         ->name('poseurs.post');
 
     Route::put('/clients/{id}/update-type', [ClientController::class, 'updateType'])

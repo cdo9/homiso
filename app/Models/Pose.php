@@ -7,6 +7,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -30,7 +31,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property User|null $user
  * @property Vente $vente
  * @property PoseDetail|null $pose_detail
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Poseur> $poseurs
+ * @property-read Collection<int, Poseur> $poseurs
  * @property-read int|null $poseurs_count
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Pose newModelQuery()

@@ -17,8 +17,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $tri
  * @property int $secteur
  * @property User $user
- * @property-read \App\Models\User $responsable
- * @property-read \App\Models\Secteur $secteurRel
+ * @property-read User $responsable
+ * @property-read Secteur $secteurRel
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Groupe newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Groupe newQuery()

@@ -10,6 +10,7 @@ use App\Services\SourceService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class RendezVousForm extends Component
@@ -522,7 +523,7 @@ class RendezVousForm extends Component
             /*dd(session('return_url', url()->current()));
             return redirect()->to(session('return_url', url()->current()))->with('success', $message);*/
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             DB::rollBack();
             Log::error('Validation error saving rendez-vous via Livewire: '.$e->getMessage());
             // Let Laravel handle the validation errors automatically

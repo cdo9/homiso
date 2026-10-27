@@ -149,7 +149,7 @@ class Ventes extends Component
 
     private function listPrioritesFlat()
     {
-        $priorities = \App\Services\ProjectService::listPriorities();
+        $priorities = ProjectService::listPriorities();
         $flat = [];
         foreach ($priorities as $category => $products) {
             foreach ($products as $key => $name) {
@@ -700,7 +700,7 @@ class Ventes extends Component
         foreach ($allComm as $k => $c) {
             for ($i = 1; $i <= 12; $i++) {
                 // Calcul taux commission mensuel de base
-                [$taux, $tauxRAI] = \App\Services\CommissionService::calculTauxCommissionMensuel($c['contrat'], $commerciauxData[$c['id']]['prix_vente'][$i], $commerciauxData[$c['id']]['prix_tarif'][$i]);
+                [$taux, $tauxRAI] = CommissionService::calculTauxCommissionMensuel($c['contrat'], $commerciauxData[$c['id']]['prix_vente'][$i], $commerciauxData[$c['id']]['prix_tarif'][$i]);
 
                 $commerciauxData[$c['id']]['taux_commission'][$i] = $taux;
                 $commerciauxData[$c['id']]['taux_commission_rai'][$i] = $tauxRAI;
@@ -875,7 +875,7 @@ class Ventes extends Component
 
         $taux = $this->calculateTaux($vente, $commerciauxData);
 
-        $montant = \App\Services\CommissionService::calculMontantCommission(
+        $montant = CommissionService::calculMontantCommission(
             $contrat,
             $vente->ca_ht, // Convert from cents
             $vente->ca_total_ht, // Convert from cents
@@ -883,7 +883,7 @@ class Ventes extends Component
             $taux
         );
 
-        if (\App\Services\CommissionService::shouldMaskCommission(auth()->user(), $vente->id_commercial, 'taux')) {
+        if (CommissionService::shouldMaskCommission(auth()->user(), $vente->id_commercial, 'taux')) {
             $vente->montant_commission = '--';
             $vente->taux = '--';
         } else {
@@ -900,7 +900,7 @@ class Ventes extends Component
         $tauxRAI = $commerciauxData[$vente->id_commercial]['taux_commission_rai'][$mois];
         $tauxStandard = $commerciauxData[$vente->id_commercial]['taux_commission'][$mois];
 
-        $taux = \App\Services\CommissionService::isVenteRAI($produitsStr) ? $tauxRAI : $tauxStandard;
+        $taux = CommissionService::isVenteRAI($produitsStr) ? $tauxRAI : $tauxStandard;
 
         return $taux;
     }
@@ -919,7 +919,7 @@ class Ventes extends Component
 
                     $taux = $this->calculateTaux($vente, $commerciauxData);
 
-                    $montant = \App\Services\CommissionService::calculMontantCommission(
+                    $montant = CommissionService::calculMontantCommission(
                         $contrat,
                         $vente->ca_ht,
                         $vente->ca_total_ht,
@@ -927,7 +927,7 @@ class Ventes extends Component
                         $taux
                     );
 
-                    if (! \App\Services\CommissionService::shouldMaskCommission(auth()->user(), $vente->id_commercial, 'montant')) {
+                    if (! CommissionService::shouldMaskCommission(auth()->user(), $vente->id_commercial, 'montant')) {
                         $totalCommission += $montant;
                     }
                 }

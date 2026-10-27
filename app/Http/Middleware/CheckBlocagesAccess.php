@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Livewire\Blocages;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +19,7 @@ class CheckBlocagesAccess
 
         $user = auth()->user();
         if (! $this->blocages) {
-            $this->blocages = new \App\Livewire\Blocages;
+            $this->blocages = new Blocages;
             $this->blocages->mount();
         }
 

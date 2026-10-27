@@ -7,6 +7,7 @@ use App\Models\RendezVous;
 use App\Models\Vente;
 use App\Services\ProjectService;
 use App\Services\SourceService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -51,7 +52,7 @@ class ArgumentationController extends Controller
     /**
      * Store a newly created argumentation in storage.
      *
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function store(Request $request)
     {

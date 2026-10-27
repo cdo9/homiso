@@ -9,6 +9,7 @@ use App\Services\CommerciauxService;
 use App\Services\ProjectService;
 use App\Services\SourceService;
 use App\Services\StatsContactsServices;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -84,7 +85,7 @@ class MapController extends Controller
     /**
      * Get map points based on the provided parameters
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function getMapPoints(Request $request)
     {

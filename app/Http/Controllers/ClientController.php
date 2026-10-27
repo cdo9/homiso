@@ -14,9 +14,14 @@ use App\Services\ProjectService;
 use App\Services\SourceService;
 use Carbon\Carbon;
 use DateTime;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 class ClientController extends Controller
 {
@@ -28,7 +33,7 @@ class ClientController extends Controller
     /**
      * Get autocomplete suggestions for clients by name, phone number, or email
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function autocomplete(Request $request)
     {
@@ -141,7 +146,7 @@ class ClientController extends Controller
     /**
      * Search for clients by name, phone number, or email
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function search(Request $request)
     {
@@ -215,7 +220,7 @@ class ClientController extends Controller
      * Display the specified client.
      *
      * @param  int  $id
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\View\View|object
+     * @return Factory|\Illuminate\Contracts\View\View|Application|View|object
      */
     public function show($id, Request $request)
     {
@@ -241,7 +246,7 @@ class ClientController extends Controller
      * Update the client type
      *
      * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public static function updateType(Request $request, $id)
     {
@@ -450,10 +455,10 @@ class ClientController extends Controller
 
         // Check if we're updating an existing client
         if ($request->has('client_id')) {
-            $client = \App\Models\Client::find($request->client_id);
+            $client = Client::find($request->client_id);
             if (! $client) {
                 // If client not found, create a new one
-                $client = new \App\Models\Client;
+                $client = new Client;
                 $client->rentre_le = now();
                 $client->id_doublon = 0;
                 $client->bloque = 0;
@@ -461,7 +466,7 @@ class ClientController extends Controller
             }
         } else {
             // Create a new client
-            $client = new \App\Models\Client;
+            $client = new Client;
             $client->rentre_le = now();
             $client->id_doublon = 0;
             $client->bloque = 0;
@@ -668,7 +673,7 @@ class ClientController extends Controller
     /**
      * Display the form for creating a new client.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function create(Request $request)
     {

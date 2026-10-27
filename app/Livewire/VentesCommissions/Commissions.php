@@ -4,6 +4,7 @@ namespace App\Livewire\VentesCommissions;
 
 use App\Models\User;
 use App\Models\Vente;
+use App\Services\CommissionService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -176,13 +177,13 @@ class Commissions extends Component
             $prix_vente_mensuel = $vente->ca_ht;
             $prix_tarif_mensuel = $vente->tarif_ht;
 
-            [$tauxStandard, $tauxRAI] = \App\Services\CommissionService::calculTauxCommissionMensuel(
+            [$tauxStandard, $tauxRAI] = CommissionService::calculTauxCommissionMensuel(
                 $contrat,
                 $prix_vente_mensuel,
                 $prix_tarif_mensuel
             );
 
-            $taux = \App\Services\CommissionService::isVenteRAI($produitsStr) ? $tauxRAI : $tauxStandard;
+            $taux = CommissionService::isVenteRAI($produitsStr) ? $tauxRAI : $tauxStandard;
 
             return ['taux' => $taux, 'montant' => 0]; // montant will be calculated separately
 
@@ -208,15 +209,15 @@ class Commissions extends Component
             $prix_vente_mensuel = $vente->ca_ht;
             $prix_tarif_mensuel = $vente->tarif_ht;
 
-            [$tauxStandard, $tauxRAI] = \App\Services\CommissionService::calculTauxCommissionMensuel(
+            [$tauxStandard, $tauxRAI] = CommissionService::calculTauxCommissionMensuel(
                 $contrat,
                 $prix_vente_mensuel,
                 $prix_tarif_mensuel
             );
 
-            $taux = \App\Services\CommissionService::isVenteRAI($produitsStr) ? $tauxRAI : $tauxStandard;
+            $taux = CommissionService::isVenteRAI($produitsStr) ? $tauxRAI : $tauxStandard;
 
-            $montant = \App\Services\CommissionService::calculMontantCommission(
+            $montant = CommissionService::calculMontantCommission(
                 $contrat,
                 $vente->ca_ht,
                 $vente->ca_total_ht,
@@ -225,7 +226,7 @@ class Commissions extends Component
             );
 
             // Check if commission.blade.php should be masked for this user
-            if (\App\Services\CommissionService::shouldMaskCommission(auth()->user(), $commercialId, 'montant')) {
+            if (CommissionService::shouldMaskCommission(auth()->user(), $commercialId, 'montant')) {
                 return 0;
             }
 

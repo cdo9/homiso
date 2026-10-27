@@ -5,8 +5,10 @@ namespace App\Livewire;
 use App\Enums\Type;
 use App\Models\Alert;
 use App\Models\Client;
+use App\Models\Source;
 use App\Services\ProjectService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class MapContactForm extends Component
@@ -247,7 +249,7 @@ class MapContactForm extends Component
 
             session()->flash('success', 'Client créé avec succès');
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             // Validation errors are automatically handled by Livewire
             $this->isSubmitting = false;
         } catch (\Exception $e) {
@@ -282,7 +284,7 @@ class MapContactForm extends Component
 
     public function getSourcesProperty()
     {
-        return \App\Models\Source::orderBy('nom')->get();
+        return Source::orderBy('nom')->get();
     }
 
     public function getPrioritiesProperty()

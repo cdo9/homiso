@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Stats;
 
+use App\Services\ProjectService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -122,7 +123,7 @@ class StatsProduit extends Component
             }
         }
 
-        $lstProduits = \App\Services\ProjectService::listPriorities();
+        $lstProduits = ProjectService::listPriorities();
 
         $this->statsProduits = [];
         foreach ($lstProduits as $famille => $produits) {

@@ -168,7 +168,7 @@ trait BlocagesTrait
                                 ->where('u1.nouveau_vendeur', '=', 1);
                         });
                 })
-                ->whereBetween('r.date', ['2024-09-16', \Carbon\Carbon::yesterday()->format('Y-m-d')])
+                ->whereBetween('r.date', ['2024-09-16', Carbon::yesterday()->format('Y-m-d')])
                 ->get();
         });
 

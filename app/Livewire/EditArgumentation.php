@@ -9,8 +9,11 @@ use App\Models\User;
 use App\Models\Vente;
 use App\Services\ProjectService;
 use App\Services\SourceService;
+use App\Utils\DataNormalizer;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class EditArgumentation extends Component
@@ -182,7 +185,7 @@ class EditArgumentation extends Component
         $this->commerciaux = $commQuery->distinct()->whereNotIn('role', ['administratif'])->orderBy('active', 'desc')->orderBy('nom', 'asc')->get();
 
         $this->sources = SourceService::createSourceLst();
-        $this->priorites = \App\Services\ProjectService::listPriorities();
+        $this->priorites = ProjectService::listPriorities();
 
         if ($rdvId) {
             // Mode édition
@@ -524,7 +527,7 @@ class EditArgumentation extends Component
         $this->updated('client_id');
     }
 
-    protected function handleValidationException(\Illuminate\Validation\ValidationException $e)
+    protected function handleValidationException(ValidationException $e)
     {
         Log::error('Validation errors:', $e->errors());
         foreach ($e->errors() as $field => $messages) {
@@ -561,7 +564,7 @@ class EditArgumentation extends Component
         // Validate client, rdv and vente separately so we can show precise errors
         try {
             $this->validate($this->rulesClient);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             $this->handleValidationException($e);
 
             return;
@@ -569,7 +572,7 @@ class EditArgumentation extends Component
 
         try {
             $this->validate($this->rulesRdv);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             $this->handleValidationException($e);
 
             return;
@@ -577,7 +580,7 @@ class EditArgumentation extends Component
 
         try {
             $this->validate($this->rulesVente);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             $this->handleValidationException($e);
 
             return;
@@ -620,7 +623,7 @@ class EditArgumentation extends Component
             Log::info('Updated property: paiement  '.$this->paiement);
             if (in_array($this->paiement, ['Financement', 'Comptant et financement']) && $this->postpone && $this->duree_pret) {
                 try {
-                    $dateBase = \Carbon\Carbon::parse($this->vente1->date ? $this->vente1->date : now());
+                    $dateBase = Carbon::parse($this->vente1->date ? $this->vente1->date : now());
                     $finFinancement = $dateBase->copy()->addMonths((int) $this->postpone + (int) $this->duree_pret)->format('Y-m-d');
                 } catch (\Exception $e) {
                     Log::error('Erreur calcul fin_financement', ['error' => $e->getMessage()]);
@@ -657,7 +660,7 @@ class EditArgumentation extends Component
             'partage_avec' => $this->partage_avec,
         ];
 
-        $updateData = \App\Utils\DataNormalizer::normalizeEmptyValues($updateData);
+        $updateData = DataNormalizer::normalizeEmptyValues($updateData);
         foreach ($updateData as $key => $value) {
             $this->rendezVous->$key = $value;
         }
@@ -739,7 +742,7 @@ class EditArgumentation extends Component
                         'mensualite' => $this->mensualite,
                         'fin_financement' => $finFinancement,
                     ];
-                    $venteData = \App\Utils\DataNormalizer::normalizeEmptyValues($venteData);
+                    $venteData = DataNormalizer::normalizeEmptyValues($venteData);
                     foreach ($venteData as $key => $value) {
                         $vente->$key = $value;
                     }
@@ -821,7 +824,7 @@ class EditArgumentation extends Component
                         'fin_financement' => $finFinancement,
                     ];
 
-                    $venteData = \App\Utils\DataNormalizer::normalizeEmptyValues($venteData);
+                    $venteData = DataNormalizer::normalizeEmptyValues($venteData);
                     foreach ($venteData as $key => $value) {
                         $vente->$key = $value;
                     }

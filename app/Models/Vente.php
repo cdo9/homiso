@@ -56,7 +56,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read mixed $paiement_options
  * @property-read mixed $type_vente_options
  * @property-read int|null $poses_count
- * @property-read \App\Models\RendezVous $rendez_vous
+ * @property-read RendezVous $rendez_vous
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Vente newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Vente newQuery()

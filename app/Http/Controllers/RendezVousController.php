@@ -6,15 +6,18 @@ use App\Models\RendezVous;
 use App\Models\User;
 use App\Services\ProjectService;
 use App\Services\SourceService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\View\View;
 
 class RendezVousController extends Controller
 {
     /**
      * Display a listing of the rendez-vous.
      *
-     * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse
+     * @return View|JsonResponse
      */
     public function index(Request $request)
     {
@@ -67,7 +70,7 @@ class RendezVousController extends Controller
     /**
      * Show the form for creating a new rendez-vous.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function create()
     {
@@ -100,7 +103,7 @@ class RendezVousController extends Controller
     /**
      * Store a newly created rendez-vous in storage.
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     * @return RedirectResponse|JsonResponse
      */
     public function store(Request $request)
     {
@@ -162,7 +165,7 @@ class RendezVousController extends Controller
      * Display the specified rendez-vous.
      *
      * @param  int  $id
-     * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse
+     * @return View|JsonResponse
      */
     public function show($id, Request $request)
     {
@@ -182,7 +185,7 @@ class RendezVousController extends Controller
      * Update the specified rendez-vous in storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     * @return RedirectResponse|JsonResponse
      */
     public function update(Request $request, $id)
     {
@@ -240,7 +243,7 @@ class RendezVousController extends Controller
      * Remove the specified rendez-vous from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     * @return RedirectResponse|JsonResponse
      */
     public function destroy($id, Request $request)
     {

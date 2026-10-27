@@ -7,6 +7,7 @@ use App\Models\Comment;
 use App\Models\User;
 use App\Models\Vente;
 use App\Services\CommerciauxService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
@@ -317,7 +318,7 @@ class ListingClient extends Component
                     $client->projet,
                     $client->dernier_paiement,
                     $this->getCommercialNomById($client->rentre_par),
-                    $client->rentre_le ? \Carbon\Carbon::parse($client->rentre_le)->format('d/m/Y') : '',
+                    $client->rentre_le ? Carbon::parse($client->rentre_le)->format('d/m/Y') : '',
                 ]);
             }
 

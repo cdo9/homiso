@@ -9,6 +9,8 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
 
 /**
@@ -67,7 +69,7 @@ use Illuminate\Notifications\Notifiable;
  * @property-read int|null $evaluations_count
  * @property-read string $display_name
  * @property-read int|null $groupes_count
- * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
  * @property-read int|null $objectif_annuel_commercials_count
  * @property-read int|null $objectifs_count

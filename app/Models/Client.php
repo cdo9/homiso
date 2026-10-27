@@ -69,21 +69,21 @@ use Laravel\Scout\Searchable;
  * @property Collection|Vente[] $ventes
  * @property string|null $profil_clients
  * @property bool $relance
- * @property-read Collection<int, \App\Models\ClientHistory> $clientHistory
+ * @property-read Collection<int, ClientHistory> $clientHistory
  * @property-read int|null $client_history_count
- * @property-read Collection<int, \App\Models\Comment> $comments
+ * @property-read Collection<int, Comment> $comments
  * @property-read int|null $comments_count
- * @property-read \App\Models\Comment|null $dernierCommentaire
- * @property-read \App\Models\Projet|null $dernierRdv
+ * @property-read Comment|null $dernierCommentaire
+ * @property-read Projet|null $dernierRdv
  * @property-read int|null $evaluations_count
  * @property-read string $telephone1_formatted
  * @property-read string $telephone2_formatted
- * @property-read \App\Models\User|null $partageUser
+ * @property-read User|null $partageUser
  * @property-read int|null $poses_count
  * @property-read int|null $projets_count
  * @property-read int|null $rendez_vous_count
  * @property-read int|null $trackings_count
- * @property-read \App\Models\User|null $user
+ * @property-read User|null $user
  * @property-read int|null $ventes_count
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Client newModelQuery()
