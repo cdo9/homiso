@@ -19,7 +19,7 @@ Ce document liste les problèmes **restant à traiter** dans le code récupéré
 | 5 | Code mort et règles cachées dans la commande SMS (`$sender` inutilisé, pas d'envoi en août) | 🟡 Faible | ❌ À nettoyer |
 | 6 | Envoi des SMS déclenché par une URL au lieu du scheduler | 🟠 Moyenne | ❌ À corriger |
 | 7 | Clé Google Maps dans une page de test publique | 🟡 Faible | ⚠️ Fichier ignoré, clé à restreindre |
-| 8 | Deux fichiers de lock (npm et pnpm) | 🟡 Faible | ❌ À trancher |
+| 8 | Deux fichiers de lock (npm et pnpm) | 🟡 Faible | ✅ npm retenu |
 | 9 | Telescope dans `require` : chargé en prod seulement si `APP_ENV=local` | 🟡 Faible | ❌ À vérifier (`APP_ENV` de prod) |
 | 10 | Macros de débogage et `View::composer` mort dans `AppServiceProvider` | 🟡 Faible | ❌ À nettoyer |
 | 11 | Anciens fichiers laissés dans `app/` (`_TableauChiffres.php`, `old_Map.php`) | 🟡 Faible | ❌ À supprimer |
@@ -168,9 +168,9 @@ Une clé Maps est forcément visible côté navigateur. Le risque, c'est une cl�
 
 ## 8. Deux fichiers de lock
 
-**Constat :** `package-lock.json` (npm) et `pnpm-lock.yaml` (pnpm) coexistent. Ils peuvent installer des versions différentes selon l'outil utilisé. Or `package.json` déclare `"packageManager": "pnpm@8.15.3"` : le gestionnaire prévu est donc **pnpm**.
+**Constat :** `package-lock.json` (npm) et `pnpm-lock.yaml` (pnpm) coexistent. Ils peuvent installer des versions différentes selon l'outil utilisé. Or `package.json` déclare `"packageManager": "pnpm@8.15.3"` : le gestionnaire prévu était donc **pnpm**.
 
-**À faire :** passer à pnpm (`sail pnpm install`), supprimer `package-lock.json` et l'indiquer dans le README.
+**Fait :** npm retenu (habitude de l'équipe, et pnpm n'apporte rien sur 7 dépendances). `pnpm-lock.yaml` et le champ `packageManager` ont été supprimés.
 
 ---
 
@@ -248,4 +248,4 @@ Aucun autre fichier ne les référence.
 3. Supprimer les scripts de `public/` sur le serveur de prod (§2, §7)
 4. Mettre en place le scheduler et le cron (§6)
 5. Corriger les pages en erreur 500 (§13)
-6. Trancher npm/pnpm, vérifier Telescope, faire le ménage (§8 à §12), écrire des tests (§14)
+6. Vérifier Telescope, faire le ménage (§9 à §11), écrire des tests (§14)
