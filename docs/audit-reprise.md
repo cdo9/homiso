@@ -26,6 +26,7 @@ Ce document liste les problèmes **restant à traiter** dans le code récupéré
 | 12 | Paquets inutiles : `yoeunes/toastr` (paquet vide) et `ovh/ovh` (jamais utilisé) | 🟡 Faible | ✅ Retirés |
 | 13 | 4 pages en erreur 500 (commissions, gestion-commerciaux, rattrapage, tableau-chiffres) | 🔴 Élevée | ❌ À analyser |
 | 14 | Pas de vrais tests (seul le test d'exemple Laravel, en échec) | 🟠 Moyenne | ❌ À construire |
+| 15 | 5 erreurs PHPStan restantes (méthode inexistante, import manquant, retour manquant...) | 🟡 Faible | ❌ À corriger |
 
 ---
 
@@ -241,6 +242,25 @@ Aucun autre fichier ne les référence.
 
 ---
 
+## 15. Erreurs PHPStan restantes
+
+**Constat :** Larastan (niveau 0, voir `phpstan.neon`) signale 5 erreurs, qui font échouer l'étape PHPStan de `ci-cd.sh`. Les 54 fausses alertes de relation ont déjà été réglées en typant les relations des modèles. Deux des cinq sont dans du code qui n'est jamais exécuté :
+
+| Fichier | Erreur | Impact réel |
+|---|---|---|
+| `app/Http/Controllers/RendezVousController.php:89` | `SourceService::listPriorities()` n'existe pas (la classe n'a que `createSourceLst()` et `getSourceName()`) | **Aucun aujourd'hui** : `create()` n'est reliée à aucune route (`/nouveau-rendez-vous` affiche directement la vue). Plantage assuré si quelqu'un la branche |
+| `app/Livewire/Client/ClientForm.php:160` | `DB::table()` sans `use Illuminate\Support\Facades\DB` | **Aucun aujourd'hui** : le composant n'est intégré dans aucune vue (seul `old_Map.php`, lui-même mort, lui envoie des événements). Plantage assuré s'il est utilisé |
+| `app/Http/Controllers/CommentController.php:40` | `store()` ne renvoie rien quand `type` et `commentaire` sont tous les deux vides | Faible : `POST /comments` répond 200 avec un corps vide au lieu d'une réponse JSON. Le JavaScript qui l'appelle peut mal le gérer |
+| `app/Livewire/VentesCommissions/Ventes.php:106` | `User::where('id', …)->get()->first()` | Charge une collection pour un seul utilisateur. Et si l'id n'existe pas, `->toArray()` sur `null` plante |
+| `app/Livewire/VentesCommissions/Ventes.php:513` | Même code dupliqué | Idem |
+
+**À faire :**
+- `ClientForm` et `RendezVousController::create()` : vérifier qu'ils sont bien morts, puis les supprimer (avec la vue `livewire/client/client-form.blade.php` et `old_Map.php`, §11), ou les corriger s'ils doivent servir.
+- `CommentController::store()` : renvoyer une réponse JSON explicite (une erreur de validation si les deux champs sont vides).
+- `Ventes.php` : remplacer par `User::findOrFail($this->commercial)` (ou `find()` avec gestion du `null`), et factoriser les deux occurrences.
+
+---
+
 ## Ordre d'action recommandé
 
 1. Changer le mot de passe MySQL OVH (§1) et régénérer la clé Spot-Hit (§3)
@@ -248,4 +268,4 @@ Aucun autre fichier ne les référence.
 3. Supprimer les scripts de `public/` sur le serveur de prod (§2, §7)
 4. Mettre en place le scheduler et le cron (§6)
 5. Corriger les pages en erreur 500 (§13)
-6. Vérifier Telescope, faire le ménage (§9 à §11), écrire des tests (§14)
+6. Vérifier Telescope, faire le ménage (§9 à §11), corriger les erreurs PHPStan (§15), écrire des tests (§14)
