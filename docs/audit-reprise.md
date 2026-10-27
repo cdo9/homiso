@@ -16,14 +16,14 @@ Ce document liste les problèmes **restant à traiter** dans le code récupéré
 | 2 | Scripts d'administration accessibles publiquement dans `public/` | 🔴 Élevée | ⚠️ Fichiers ignorés, à supprimer du serveur |
 | 3 | Clé API Spot-Hit (SMS) écrite en dur dans une commande | 🔴 Élevée | ❌ À corriger, **clé à régénérer** |
 | 4 | Numéros de téléphone écrits en dur dans la commande SMS | 🟠 Moyenne | ❌ À corriger |
-| 5 | `config('services.spothit.from')` pointe vers une config inexistante | 🟠 Moyenne | ❌ À corriger |
+| 5 | Code mort et règles cachées dans la commande SMS (`$sender` inutilisé, pas d'envoi en août) | 🟡 Faible | ❌ À nettoyer |
 | 6 | Envoi des SMS déclenché par une URL au lieu du scheduler | 🟠 Moyenne | ❌ À corriger |
 | 7 | Clé Google Maps dans une page de test publique | 🟡 Faible | ⚠️ Fichier ignoré, clé à restreindre |
 | 8 | Deux fichiers de lock (npm et pnpm) | 🟡 Faible | ❌ À trancher |
-| 9 | Telescope installé en production et activé par défaut | 🟡 Faible | ❌ À vérifier |
-| 10 | Code de débogage dans `AppServiceProvider` | 🟡 Faible | ❌ À nettoyer |
+| 9 | Telescope dans `require` : chargé en prod seulement si `APP_ENV=local` | 🟡 Faible | ❌ À vérifier (`APP_ENV` de prod) |
+| 10 | Macros de débogage et `View::composer` mort dans `AppServiceProvider` | 🟡 Faible | ❌ À nettoyer |
 | 11 | Anciens fichiers laissés dans `app/` (`_TableauChiffres.php`, `old_Map.php`) | 🟡 Faible | ❌ À supprimer |
-| 12 | Paquet abandonné `yoeunes/toastr` en doublon de `php-flasher` | 🟡 Faible | ❌ À retirer |
+| 12 | Paquets inutiles : `yoeunes/toastr` (paquet vide) et `ovh/ovh` (jamais utilisé) | 🟡 Faible | ✅ Retirés |
 | 13 | 4 pages en erreur 500 (commissions, gestion-commerciaux, rattrapage, tableau-chiffres) | 🔴 Élevée | ❌ À analyser |
 | 14 | Pas de vrais tests (seul le test d'exemple Laravel, en échec) | 🟠 Moyenne | ❌ À construire |
 
@@ -108,39 +108,40 @@ Puis **régénérer la clé** dans l'espace Spot-Hit : l'ancienne doit être con
 **Constat :** les destinataires sont écrits directement dans la commande :
 
 ```php
-$receivers = "06********";
-$receivers = "06********,07********";
+$receivers = "06********";            // rapport de 8h et résultats du vendredi
+$receivers = "06********,07********"; // résultats de fin de mois
 ```
 
 - Ce sont des données personnelles dans le code.
 - Changer un destinataire impose de modifier le code et de redéployer.
 
-**À faire :** les déplacer dans le `.env` (`SMS_RECEIVERS_FRIDAY`, `SMS_RECEIVERS_MONTH_END`), dans la config, ou mieux, en base (paramètres de l'application).
+**À faire :** les déplacer dans le `.env` (`SMS_RECEIVERS_DAILY`, `SMS_RECEIVERS_FRIDAY`, `SMS_RECEIVERS_MONTH_END`), dans la config, ou mieux, en base (paramètres de l'application).
 
 ---
 
-## 5. Config `services.spothit` inexistante
+## 5. Code mort et règles cachées dans la commande SMS
 
-**Constat :** la commande lit `config('services.spothit.from')`, mais `config/services.php` ne contient pas d'entrée `spothit`. La valeur vaut donc toujours `null`, et l'expéditeur des SMS n'est jamais celui prévu.
-
-**À faire :** ajouter l'entrée `spothit` (voir §3) et la variable `SPOTHIT_FROM` dans le `.env`.
-
-Autres détails dans cette commande :
+**Constat :** dans `DispatchPlannedSms.php` :
+- `$sender = config('services.spothit.from')` lit une config qui n'existe pas, mais **la variable n'est jamais utilisée** : l'expéditeur est écrit en dur dans l'appel (`'expediteur' => 'Homiso'`). Les SMS partent donc bien avec l'expéditeur « Homiso ». Même chose pour `$smsLong` et `$smsLongNbr`, déclarées mais inutilisées ;
 - `$description = 'Command description'` : jamais renseignée ;
-- des `use` inutiles (`Secteur`, `TableauChiffres`, `User`...) ;
-- `if ($date->month == 8) return;` : règle métier « pas d'envoi en août » cachée dans le code, sans constante ni config.
+- `if ($date->month == 8) return;` : règle métier « pas d'envoi en août » cachée dans le code, sans constante ni config ;
+- le rapport de 8h exclut le secteur 10 en dur (`in_array($secteur->id, [10])`) ;
+- les chiffres sont calculés au nom de l'utilisateur `id 1`, codé en dur ;
+- la commande renvoie la réponse JSON de Spot-Hit au lieu d'un code de sortie (`self::SUCCESS`).
+
+**À faire :** lors de la sortie de la clé (§3), lire l'expéditeur depuis `services.spothit.from` (valeur par défaut `Homiso`) et supprimer les variables mortes. Faire confirmer la règle d'août et l'exclusion du secteur 10 (questions à l'ancien développeur), puis les rendre explicites (constantes ou config).
 
 ---
 
 ## 6. Envoi des SMS par URL au lieu du scheduler
 
-**Constat :** la commande `sms:dispatch-planned` existe et gère elle-même les dates (vendredi soir, dernier jour ouvré du mois). Mais elle n'est **pas planifiée** dans `routes/console.php`. Seul `telescope:prune` l'est. L'envoi dépend donc d'un appel externe à `launchSMS.php` (cron OVH qui appelle une URL ?).
+**Constat :** la commande `sms:dispatch-planned` existe et gère elle-même les dates : rapport de mapping à 8h les jours ouvrés, résultats le vendredi à 20h et le dernier jour ouvré du mois à 20h. Mais elle n'est **pas planifiée** dans `routes/console.php`. Seul `telescope:prune` l'est. L'envoi dépend donc d'un appel externe à `launchSMS.php` (cron OVH qui appelle une URL ?).
 
 **À faire :**
 
 ```php
 // routes/console.php
-Schedule::command('sms:dispatch-planned')->hourly(); // fréquence à valider selon la logique interne
+Schedule::command('sms:dispatch-planned')->hourly(); // la commande ne fait quelque chose qu'à 8h et 20h
 ```
 
 Puis un seul cron OVH (Hébergement → Tâches planifiées) :
@@ -175,21 +176,23 @@ Une clé Maps est forcément visible côté navigateur. Le risque, c'est une cl�
 
 ## 9. Telescope en production
 
-**Constat :** `laravel/telescope` est dans `require` (et non `require-dev`), et `TELESCOPE_ENABLED` vaut `true` par défaut. En prod, Telescope enregistre requêtes, sessions et requêtes SQL : c'est lourd, et sensible si l'accès au tableau de bord `/telescope` est mal protégé.
+**Constat :** `laravel/telescope` est dans `require` (et non `require-dev`), et `TELESCOPE_ENABLED` vaut `true` par défaut. Mais le paquet est exclu de l'auto-découverte (`dont-discover` dans `composer.json`) et `AppServiceProvider` ne l'enregistre que si `APP_ENV=local`. En prod, Telescope n'est donc **pas chargé**, sauf si la prod tourne par erreur en `APP_ENV=local`. Dans ce cas, il enregistrerait toutes les requêtes, sessions et requêtes SQL. Le `gate` de `TelescopeServiceProvider` (liste d'e-mails vide) refuserait quand même l'accès à `/telescope` à tout le monde.
 
-**À faire :** vérifier le `gate` dans `TelescopeServiceProvider`, et mettre `TELESCOPE_ENABLED=false` en prod sauf besoin ponctuel.
+Effet de bord : la seule tâche du scheduler, `telescope:prune`, n'existe pas hors `local`.
+
+**À faire :** vérifier `APP_ENV` (et `APP_DEBUG`) dans le `.env` de prod. Déplacer Telescope en `require-dev` et retirer `telescope:prune` du scheduler, ou le conditionner à l'environnement.
 
 ---
 
 ## 10. Code de débogage dans `AppServiceProvider`
 
 **Constat :** dans `app/Providers/AppServiceProvider.php` :
-- `TelescopeServiceProvider` est enregistré deux fois dans `register()` (celui du paquet et celui de l'application) ;
-- les macros `ddSql` font un `dd()` : pratiques en débogage, mais à ne jamais laisser appelées dans le code.
-
+- les macros `ddSql` font un `dd()` : pratiques en débogage. Les deux seuls appels (`ListingClient.php`) sont commentés ;
 - le `View::composer('rendez-vous/confirmation-de-rendez-vous', ...)` vise une vue qui n'existe pas (le fichier s'appelle `confirmations-de-rendez-vous`) : ce code ne s'exécute jamais.
 
-**À faire :** vérifier quel provider Telescope est vraiment nécessaire, chercher les appels à `ddSql` restants, et corriger ou supprimer le composer mort (vérifier d'abord si la vue a besoin de `$sources` / `$poseurs`).
+**À faire :** supprimer le composer mort, ou corriger le nom de la vue si elle a besoin de `$sources` / `$poseurs` (à vérifier d'abord).
+
+> Les deux enregistrements Telescope dans `register()` (provider du paquet + provider de l'application) ne sont pas un doublon : c'est la configuration standard de Laravel pour réserver Telescope au local.
 
 ---
 
@@ -199,15 +202,19 @@ Une clé Maps est forcément visible côté navigateur. Le risque, c'est une cl�
 - `app/Livewire/TableauChiffre/_TableauChiffres.php`
 - `app/Livewire/old_Map.php`
 
+Aucun autre fichier ne les référence.
+
 **À faire :** les supprimer (Git conserve l'historique, inutile de garder des copies `old_` / `_`).
 
 ---
 
-## 12. Paquet abandonné `yoeunes/toastr`
+## 12. Paquets inutiles
 
-**Constat :** `yoeunes/toastr` est abandonné, et son remplaçant `php-flasher/flasher-toastr-laravel` est **déjà installé**. Les deux cohabitent.
+**Constat :**
+- `yoeunes/toastr` v3 est un paquet **vide** : il ne contient aucun code et dépend seulement de `php-flasher/flasher-toastr-laravel`, déjà requis directement. Le helper `toastr()` utilisé dans les contrôleurs vient de `php-flasher`.
+- `ovh/ovh` n'est utilisé nulle part : l'ancien envoi de SMS par OVH ne subsiste qu'en lignes commentées dans `DispatchPlannedSms.php`. C'est Spot-Hit qui est utilisé.
 
-**À faire :** vérifier qu'aucun code n'utilise encore `yoeunes/toastr`, puis `composer remove yoeunes/toastr`.
+**Fait :** `composer remove yoeunes/toastr ovh/ovh`, et lignes OVH commentées supprimées de `DispatchPlannedSms.php`.
 
 ---
 
@@ -237,7 +244,7 @@ Une clé Maps est forcément visible côté navigateur. Le risque, c'est une cl�
 ## Ordre d'action recommandé
 
 1. Changer le mot de passe MySQL OVH (§1) et régénérer la clé Spot-Hit (§3)
-2. Sortir la clé Spot-Hit et les numéros du code (§3, §4, §5)
+2. Sortir la clé Spot-Hit et les numéros du code, nettoyer la commande SMS (§3, §4, §5)
 3. Supprimer les scripts de `public/` sur le serveur de prod (§2, §7)
 4. Mettre en place le scheduler et le cron (§6)
 5. Corriger les pages en erreur 500 (§13)
