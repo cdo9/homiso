@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Client $client
  * @property-read \App\Models\User $commercial
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ClientHistory newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ClientHistory newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ClientHistory query()
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ClientHistory whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ClientHistory whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ClientHistory whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class ClientHistory extends Model
@@ -32,7 +34,7 @@ class ClientHistory extends Model
     protected $fillable = [
         'client_id',
         'commercial_id',
-        'status'
+        'status',
     ];
 
     public function client(): BelongsTo

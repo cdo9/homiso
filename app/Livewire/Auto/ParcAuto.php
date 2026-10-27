@@ -9,8 +9,11 @@ use Livewire\Component;
 class ParcAuto extends Component
 {
     public $date1;
+
     public $date2;
+
     public $vehicules = [];
+
     public $afficherSansKm = true;
 
     public function mount()
@@ -24,6 +27,7 @@ class ParcAuto extends Component
     {
         $this->loadVehicules();
     }
+
     public function updatedDate2()
     {
         $this->loadVehicules();
@@ -31,7 +35,7 @@ class ParcAuto extends Component
 
     public function toggleAfficherSansKm()
     {
-        $this->afficherSansKm = !$this->afficherSansKm;
+        $this->afficherSansKm = ! $this->afficherSansKm;
         $this->loadVehicules();
     }
 
@@ -41,7 +45,7 @@ class ParcAuto extends Component
 
         $vehicules = DB::table('parc_auto')
             ->where('date_attribution', '<=', $this->date2)
-            //->where('secteur', '=', session('selectedSecteur'))
+            // ->where('secteur', '=', session('selectedSecteur'))
             ->orderBy('date_attribution', 'asc')
             ->get();
 
@@ -74,35 +78,36 @@ class ParcAuto extends Component
             return $vehicule;
         });
 
-        foreach($vehicules as $vehicule){
+        foreach ($vehicules as $vehicule) {
             $vehicule->alert_ct = empty($vehicule->date_ct) ? '' : $this->isAlert(Carbon::parse($vehicule->date_ct));
             $vehicule->alert_rev = empty($vehicule->date_rev) ? '' : $this->isAlert(Carbon::parse($vehicule->date_rev));
             $vehicule->alert_pol = empty($vehicule->date_pol) ? '' : $this->isAlert(Carbon::parse($vehicule->date_pol));
         }
 
-        if (!$this->afficherSansKm) {
-            $vehicules = $vehicules->filter(fn($v) => $v->kmPeriode != 0)->values();
+        if (! $this->afficherSansKm) {
+            $vehicules = $vehicules->filter(fn ($v) => $v->kmPeriode != 0)->values();
         }
 
         $this->vehicules = $vehicules;
     }
 
-    public static function isAlert($date){
+    public static function isAlert($date)
+    {
         $limit = now()->copy()->addMonth();
         $limitYear = $limit->year;
         $limitMonth = $limit->month;
 
-        if($date->year < $limitYear || ($date->year == $limitYear && $date->month < $limitMonth))
+        if ($date->year < $limitYear || ($date->year == $limitYear && $date->month < $limitMonth)) {
             return 'bg-red-200';
+        }
 
-        if($date->year == $limitYear && $date->month == $limitMonth)
+        if ($date->year == $limitYear && $date->month == $limitMonth) {
             return 'bg-orange-200';
+        }
 
         return '';
 
     }
-
-
 
     public function render()
     {

@@ -2,23 +2,33 @@
 
 namespace App\Livewire\Auto;
 
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class FormulaireAutoNew extends Component
 {
     public $type = 'new';
+
     public $id;
+
     public $immat = '';
+
     public $modele = '';
+
     public $selectedConducteur = '';
+
     public $date_attribution;
+
     public $conducteurs = [];
+
     public $secteur = null;
+
     public $date_ct = '';
+
     public $date_rev = '';
+
     public $date_pol = '';
+
     public $secteurs = [];
 
     public function mount($id = null, $action = null)
@@ -27,15 +37,14 @@ class FormulaireAutoNew extends Component
         $commerciaux = DB::table('users')
             ->where('active', 1)
             ->get()
-            ->map(fn($c) => $c->nom.' '.$c->prenom)
+            ->map(fn ($c) => $c->nom.' '.$c->prenom)
             ->toArray();
 
         $poseurs = DB::table('poseurs')
-			->where('archive',0)
+            ->where('archive', 0)
             ->pluck('poseur')
             ->toArray();
-			
-			
+
         $this->secteurs = DB::table('secteurs')->where('activated', 1)->get();
 
         $this->conducteurs = [
@@ -74,21 +83,23 @@ class FormulaireAutoNew extends Component
             'secteur' => 'required',
             'date_ct' => 'nullable | date',
             'date_rev' => 'nullable | date',
-            'date_pol' => 'nullable | date'
+            'date_pol' => 'nullable | date',
         ]);
-            $this->id = DB::table('parc_auto')->insertGetId([
-                'immatriculation' => $this->immat,
-                'modele' => $this->modele,
-                'conducteur' => $this->selectedConducteur,
-                'date_attribution' => $this->date_attribution,
-                'secteur' => $this->secteur,
-                'date_ct' => $this->date_ct ? $this->date_ct : null,
-                'date_rev' => $this->date_rev ? $this->date_rev : null,
-                'date_pol' => $this->date_pol ? $this->date_pol : null,
-            ]);
+        $this->id = DB::table('parc_auto')->insertGetId([
+            'immatriculation' => $this->immat,
+            'modele' => $this->modele,
+            'conducteur' => $this->selectedConducteur,
+            'date_attribution' => $this->date_attribution,
+            'secteur' => $this->secteur,
+            'date_ct' => $this->date_ct ? $this->date_ct : null,
+            'date_rev' => $this->date_rev ? $this->date_rev : null,
+            'date_pol' => $this->date_pol ? $this->date_pol : null,
+        ]);
         session()->flash('message', 'Véhicule enregistré.');
+
         return redirect()->to('/parc-auto');
     }
+
     public function cancel()
     {
         return redirect('/parc-auto');
@@ -98,6 +109,7 @@ class FormulaireAutoNew extends Component
     {
         DB::table('parc_auto')->where('id', $this->id)->delete();
         session()->flash('message', 'Véhicule supprimé.');
+
         return redirect('/parc-auto');
     }
 

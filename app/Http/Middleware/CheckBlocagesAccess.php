@@ -9,15 +9,16 @@ use Illuminate\Support\Facades\Auth;
 class CheckBlocagesAccess
 {
     private $blocages = null;
+
     public function handle(Request $request, Closure $next)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
         $user = auth()->user();
-        if(!$this->blocages){
-            $this->blocages = new \App\Livewire\Blocages();
+        if (! $this->blocages) {
+            $this->blocages = new \App\Livewire\Blocages;
             $this->blocages->mount();
         }
 
@@ -25,22 +26,21 @@ class CheckBlocagesAccess
             return $next($request);
         }
 
-        if ($this->blocages->hasBlocageQuelconque($user, $user->hasRole('telepro'),$user->hasRole('prospecteur'),$user->hasRole('admin'),$user->hasRole('directeur')) && !$user->isReleased()) {
+        if ($this->blocages->hasBlocageQuelconque($user, $user->hasRole('telepro'), $user->hasRole('prospecteur'), $user->hasRole('admin'), $user->hasRole('directeur')) && ! $user->isReleased()) {
             $routesAutorisees = [
                 'rattrapage',
                 'nouveau-contact',
                 'confirmations-de-rendez-vous',
                 'confirmations',
                 'logout',
-                'welcome'
+                'welcome',
             ];
 
-            if (!in_array($request->route()->getName(), $routesAutorisees)) {
+            if (! in_array($request->route()->getName(), $routesAutorisees)) {
                 return redirect()->route('rattrapage');
             }
         }
 
         return $next($request);
     }
-   
 }

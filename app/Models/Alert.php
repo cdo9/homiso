@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \App\Models\User|null $idCommercial
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Alert newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Alert newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Alert onlyTrashed()
@@ -31,6 +32,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Alert whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Alert withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Alert withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class Alert extends Model

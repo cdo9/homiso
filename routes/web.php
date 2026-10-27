@@ -1,20 +1,19 @@
 <?php
 
 use App\Http\Controllers\ArgumentationController;
+use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\MapController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LogoutController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Route;
 
 Route::get('/ajax/commercials-by-secteur/{secteurId}', function ($secteurId) {
     // On filtre bien par secteur_id
     $users = User::join('secteur_commercials', 'users.id', '=', 'secteur_commercials.id_commercial')
-    ->where('secteur_commercials.id_secteur', $secteurId)
-    ->get(['users.id', 'users.prenom', 'users.nom', 'users.active']);
+        ->where('secteur_commercials.id_secteur', $secteurId)
+        ->get(['users.id', 'users.prenom', 'users.nom', 'users.active']);
 
     return response()->json($users);
 })->name('ajax.commercials.by.secteur');
@@ -23,6 +22,7 @@ Route::get('/ajax/setSelectedSecteur/{secteurId}', function ($secteurId) {
     if ($secteurId) {
         session(['selectedSecteur' => $secteurId]);
     }
+
     return response()->json('ok');
 })->name('ajax.setSelectedSecteur');
 
@@ -33,12 +33,12 @@ Route::middleware('web')->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-	Route::get('/map-points-count', [MapController::class, 'getMapPointsCount'])
+    Route::get('/map-points-count', [MapController::class, 'getMapPointsCount'])
         ->name('map.points.count');
-		
+
     Route::get('/map-points', [MapController::class, 'getMapPoints'])
         ->name('map.points');
-        
+
     Route::get('/getMarkerDetailContent', [MapController::class, 'getMarkerDetailContent'])
         ->name('map.detailContent');
 
@@ -48,7 +48,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/clients/autocomplete', [ClientController::class, 'autocomplete'])
         ->name('clients.autocomplete');
 
-   
 });
 
 Route::middleware(['auth', 'blocages'])->group(function () {
@@ -56,16 +55,17 @@ Route::middleware(['auth', 'blocages'])->group(function () {
         Auth::logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
+
         return redirect()->route('welcome');
     })->name('logout');
     Route::get('/rattrapage', function () {
         return view('rattrapage.rattrapage');
     })->name('rattrapage');
 
-    Route::get( '/nouveau-contact', [ClientController::class, 'create'])
+    Route::get('/nouveau-contact', [ClientController::class, 'create'])
         ->name('nouveau-contact');
 
-    Route::get( '/confirmations-de-rendez-vous', function(){
+    Route::get('/confirmations-de-rendez-vous', function () {
         return view('rendez-vous.confirmations-de-rendez-vous');
     })->name('confirmations-de-rendez-vous');
 
@@ -73,11 +73,10 @@ Route::middleware(['auth', 'blocages'])->group(function () {
         return view('rendez-vous.confirmations-de-rendez-vous');
     })->name('confirmations');
 
-    Route::get('/dashboard', function(){
+    Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
-    //Route::post('logout', [LogoutController::class, 'destroy'])->name('logout');
-
+    // Route::post('logout', [LogoutController::class, 'destroy'])->name('logout');
 
     Route::get('/', function () {
         return view('list-cards.index');
@@ -88,21 +87,20 @@ Route::middleware(['auth', 'blocages'])->group(function () {
     })->name('list-cards');
 });
 
-
 Route::middleware(['auth', 'blocages', 'role:directeur,admin,commercial,resp-prosp,telepro,administratif'])->group(function () {
-    Route::get('/ventes', function(){
+    Route::get('/ventes', function () {
         return view('vente.index');
     })->name('ventes');
-    
-    Route::get('/argumentations', function(){
+
+    Route::get('/argumentations', function () {
         return view('argumentation.argumentations');
     })->name('argumentations');
-    
+
     Route::get('/poses', function () {
         return view('poses.poses');
     })->name('poses');
 
-    Route::get('/rendez-vous', function(){
+    Route::get('/rendez-vous', function () {
         return view('rendez-vous.rendez-vous');
     })->name('rendez-vous');
 });
@@ -117,11 +115,12 @@ Route::middleware(['auth', 'blocages', 'role:directeur,admin,commercial,resp-pro
     })->name('confirmations');
 
     Route::get('/relances', function () {
-		$user = auth()->user();
+        $user = auth()->user();
         $isProspecteur = $user->hasRole('prospecteur');
-        return view('relances.index',[
-			'isProspecteur' => $isProspecteur,
-		]);
+
+        return view('relances.index', [
+            'isProspecteur' => $isProspecteur,
+        ]);
     })->name('relances');
     /*Route::get('/relances/contact/{clientId}/edit', function ($clientId) {
         return view('relances.edit-contact', compact('clientId'));
@@ -131,7 +130,7 @@ Route::middleware(['auth', 'blocages', 'role:directeur,admin,commercial,resp-pro
         return view('relances.edit-argumentation', compact('rdvId'));
     })->name('argumentation.edit');
 
-    Route::get('tableau-chiffres', function() {
+    Route::get('tableau-chiffres', function () {
         return view('board.main-tableau-chiffres');
     })->name('tableau-chiffres');
 
@@ -140,7 +139,7 @@ Route::middleware(['auth', 'blocages', 'role:directeur,admin,commercial,resp-pro
     })->name('map');*/
     Route::get('/map', [MapController::class, 'index'])->name('map');
 
-    Route::get('/parametre', function(){
+    Route::get('/parametre', function () {
         return view('parametres.parametres');
     })->name('parametres');
 
@@ -163,17 +162,16 @@ Route::middleware(['auth', 'blocages', 'role:directeur,admin,commercial,resp-pro
 
     Route::get('/rendez-vous/{id}/edit', function ($id) {
         $rendezVous = \App\Models\Projet::findOrFail($id);
+
         return view('rendez-vous.edit-rendez-vous', compact('rendezVous'));
     })->name('edit-rendez-vous');
 
- 
     Route::get('/clients/search', [ClientController::class, 'search'])
         ->name('clients.search');
     Route::get('/clients/{id}', [ClientController::class, 'show'])
         ->name('clients.show');
 
     // Route commented out - Map form functionality moved to Livewire MapContactForm component
-
 
     Route::get('/anniversaires', function () {
         return view('anniversaire.anniversaire');
@@ -187,12 +185,12 @@ Route::middleware(['auth', 'blocages', 'role:directeur,admin,commercial,resp-pro
         ->name('comments.store');
 });
 
-
-Route::middleware(['auth','blocages', 'role:directeur,admin'])->group(function () {
+Route::middleware(['auth', 'blocages', 'role:directeur,admin'])->group(function () {
 
     Route::get('/formulaire-challenge/', function () {
         $id = request('id');
-        return view('challenge.formulaire-challenge',  compact('id'));
+
+        return view('challenge.formulaire-challenge', compact('id'));
     })->name('Formulaire-challenge');
 
     Route::get('/create-challenge', function () {
@@ -203,7 +201,7 @@ Route::middleware(['auth','blocages', 'role:directeur,admin'])->group(function (
         return view('challenge.delete-challenge', compact('id'));
     })->name('Delete-challenge');
 
-    Route::get('/commissions', function(){
+    Route::get('/commissions', function () {
         $commercial = request('commercial', '');
         $mois = request('mois', '');
         $annee = request('annee', '');
@@ -228,21 +226,18 @@ Route::middleware(['auth','blocages', 'role:directeur,admin'])->group(function (
     Route::get('/nouvelle-pose/{id?}', function ($id = null) {
         return view('poses.nouvelle-pose', compact('id'));
     })->name('nouvelle-pose');
-    
+
     Route::get('/blocages', function () {
         return view('blocage.blocages');
     })->name('blocages');
-	
-
 
 });
 
 Route::middleware(['auth', 'blocages', 'role:directeur,admin,resp-prosp'])->group(function () {
-	Route::get('/stats-contact', function () {
+    Route::get('/stats-contact', function () {
         return view('contact.stats-contact');
     })->name('stats-contact');
 });
-
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/gestion-commerciaux', function () {
@@ -253,9 +248,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         return view('parc.parc-auto');
     })->name('parc-auto');
 
-
-
-    Route::get('/secteurs-list', function(){
+    Route::get('/secteurs-list', function () {
         return view('secteurs.secteur-show-list');
     })->name('secteur-show-list');
 
@@ -284,8 +277,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         });
     });
 
-
-    Route::get('alertes', function() {
+    Route::get('alertes', function () {
         return view('alertes.alertes');
     })->name('alertes');
 

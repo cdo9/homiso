@@ -3,27 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\RendezVous;
-use App\Models\Client;
 use App\Models\User;
-use App\Models\Poseur;
 use App\Services\ProjectService;
 use App\Services\SourceService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
 
 class RendezVousController extends Controller
 {
     /**
      * Display a listing of the rendez-vous.
      *
-     * @param Request $request
      * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse
      */
-
-
-     public function index(Request $request)
+    public function index(Request $request)
     {
         // Get filter parameters
         $commercial = $request->query('commercial');
@@ -66,8 +59,8 @@ class RendezVousController extends Controller
                 'commercial' => $commercial,
                 'client' => $client,
                 'date_start' => $dateStart,
-                'date_end' => $dateEnd
-            ]
+                'date_end' => $dateEnd,
+            ],
         ]);
     }
 
@@ -107,7 +100,6 @@ class RendezVousController extends Controller
     /**
      * Store a newly created rendez-vous in storage.
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
@@ -125,7 +117,7 @@ class RendezVousController extends Controller
             'tarif_total_ht' => 'nullable|integer',
             'devis_total_ht' => 'nullable|integer',
             'produits' => 'nullable|string',
-            'secteur' => 'nullable|exists:secteurs,id'
+            'secteur' => 'nullable|exists:secteurs,id',
         ]);
 
         if ($validator->fails()) {
@@ -139,7 +131,7 @@ class RendezVousController extends Controller
         }
 
         // Create new rendez-vous
-        $rendezVous = new RendezVous();
+        $rendezVous = new RendezVous;
         $rendezVous->id_client = $request->id_client;
         $rendezVous->id_commercial = $request->id_commercial;
         $rendezVous->type = $request->type;
@@ -158,7 +150,7 @@ class RendezVousController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'message' => 'Rendez-vous créé avec succès',
-                'rendezVous' => $rendezVous
+                'rendezVous' => $rendezVous,
             ], 201);
         }
 
@@ -166,13 +158,10 @@ class RendezVousController extends Controller
             ->with('success', 'Rendez-vous créé avec succès');
     }
 
-
-
     /**
      * Display the specified rendez-vous.
      *
-     * @param int $id
-     * @param Request $request
+     * @param  int  $id
      * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse
      */
     public function show($id, Request $request)
@@ -185,15 +174,14 @@ class RendezVousController extends Controller
         }
 
         return view('rendez_vous.show', [
-            'rendezVous' => $rendezVous
+            'rendezVous' => $rendezVous,
         ]);
     }
 
     /**
      * Update the specified rendez-vous in storage.
      *
-     * @param Request $request
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
     public function update(Request $request, $id)
@@ -215,7 +203,7 @@ class RendezVousController extends Controller
             'devis_total_ht' => 'nullable|integer',
             'produits' => 'nullable|string',
             'secteur' => 'nullable|exists:secteurs,id',
-            'relance_confirme' => 'sometimes|boolean'
+            'relance_confirme' => 'sometimes|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -232,7 +220,7 @@ class RendezVousController extends Controller
         $rendezVous->fill($request->only([
             'id_client', 'id_commercial', 'type', 'date', 'date_relance',
             'commentaire', 'resultat', 'source', 'tarif_total_ht',
-            'devis_total_ht', 'produits', 'secteur', 'relance_confirme'
+            'devis_total_ht', 'produits', 'secteur', 'relance_confirme',
         ]));
 
         $rendezVous->save();
@@ -240,7 +228,7 @@ class RendezVousController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'message' => 'Rendez-vous mis à jour avec succès',
-                'rendezVous' => $rendezVous
+                'rendezVous' => $rendezVous,
             ]);
         }
 
@@ -251,8 +239,7 @@ class RendezVousController extends Controller
     /**
      * Remove the specified rendez-vous from storage.
      *
-     * @param int $id
-     * @param Request $request
+     * @param  int  $id
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
     public function destroy($id, Request $request)
@@ -263,7 +250,7 @@ class RendezVousController extends Controller
         if ($rendezVous->ventes->count() > 0) {
             if ($request->ajax()) {
                 return response()->json([
-                    'message' => 'Impossible de supprimer ce rendez-vous car il est lié à des ventes'
+                    'message' => 'Impossible de supprimer ce rendez-vous car il est lié à des ventes',
                 ], 422);
             }
 
@@ -275,7 +262,7 @@ class RendezVousController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'message' => 'Rendez-vous supprimé avec succès'
+                'message' => 'Rendez-vous supprimé avec succès',
             ]);
         }
 

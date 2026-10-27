@@ -3,25 +3,31 @@
 namespace App\Livewire;
 
 use App\Models\Client;
-use App\Models\ClientHistory;
 use App\Models\Comment;
 use App\Models\Source;
 use App\Models\User;
 use App\Models\Vente;
 use App\Services\ProjectService;
+use App\Services\StatsContactsServices;
 use Illuminate\Http\Request;
 use Livewire\Component;
-use App\Services\StatsContactsServices;
 
 class Map extends Component
 {
     public $commercials;
+
     public $priorities;
+
     public $sources;
+
     public $zones;
+
     public $selectedCommercial = 0;
+
     public $selectedPriority = '';
+
     public $date1;
+
     public $date2;
 
     // ClientForm integration properties
@@ -40,9 +46,9 @@ class Map extends Component
 
         $secteurs = \DB::table('secteurs')->get();
 
-        $this->zones = $secteurs->filter(function($secteur) {
-            return !is_null($secteur->coords);
-        })->map(function($secteur) {
+        $this->zones = $secteurs->filter(function ($secteur) {
+            return ! is_null($secteur->coords);
+        })->map(function ($secteur) {
             return [
                 'name' => $secteur->nom,
                 'color' => $secteur->couleur,
@@ -74,7 +80,7 @@ class Map extends Component
                 'date1' => 'nullable|date',
                 'date2' => 'nullable|date',
                 'zoom' => 'nullable|numeric',
-                'secteur' => 'required|numeric'
+                'secteur' => 'required|numeric',
             ]);
 
             // Get the bounds
@@ -96,10 +102,10 @@ class Map extends Component
             $secteur = $validated['secteur'] ?? null;
 
             // Get the zoom level (default to 14 if not provided)
-            $zoomLevel = isset($validated['zoom']) ? (int)$validated['zoom'] : 14;
+            $zoomLevel = isset($validated['zoom']) ? (int) $validated['zoom'] : 14;
 
             // Generate cache key based on request parameters
-            $cacheKey = 'map_points_' . md5(json_encode($validated));
+            $cacheKey = 'map_points_'.md5(json_encode($validated));
 
             // Check if we have a cached response
             if (\Cache::has($cacheKey)) {
@@ -121,7 +127,7 @@ class Map extends Component
                 'comments.user:id,prenom,nom', // Get the user who made the comment
                 'clientHistory' => function ($query) {
                     $query->latest('created_at')->limit(1); // Get only the latest status change
-                }
+                },
             ])
                 ->whereNotNull('gps_lat')
                 ->whereNotNull('gps_lng')
@@ -160,7 +166,7 @@ class Map extends Component
                 if ($prioritySlug) {
                     // Join with rendez_vous table and filter by products
                     $clientsQuery->whereHas('rendez_vous', function ($query) use ($prioritySlug) {
-                        $query->where('produits', 'LIKE', '%' . $prioritySlug . '%');
+                        $query->where('produits', 'LIKE', '%'.$prioritySlug.'%');
                     });
                 } else {
                     // Fallback to the old method if no slug is found
@@ -181,14 +187,14 @@ class Map extends Component
                     'id' => $client->id, // Add client ID for identification
                     'lat' => $client->gps_lat,
                     'lng' => $client->gps_lng,
-                    'title' => $client->nom . ' ' . $client->prenom,
+                    'title' => $client->nom.' '.$client->prenom,
                     'type' => $client->type, // Use client's actual type for marker color
                 ];
 
                 // Only include detailed content if zoomed in enough or if specifically requested
                 if ($needDetailedInfo) {
                     // Get the commercial who added the client (using eager loaded relationship)
-                    $commercialName = $client->user ? $client->user->prenom . ' ' . $client->user->nom : 'Ancien commercial';
+                    $commercialName = $client->user ? $client->user->prenom.' '.$client->user->nom : 'Ancien commercial';
 
                     // Format the date when the client was added
                     $addedDate = $client->rentre_le ? $client->rentre_le->format('d/m/Y') : 'Inconnue';
@@ -207,37 +213,37 @@ class Map extends Component
                             ->get([
                                 'ventes.*',
                                 'users.prenom as commercial_prenom',
-                                'users.nom as commercial_nom'
+                                'users.nom as commercial_nom',
                             ]);
 
                         // Build the sales table HTML
                         if ($previousSales->count() > 0) {
                             $salesTableHtml =
-                                '<div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">' .
-                                '<h4 style="margin: 0 0 5px 0;">Ventes précédentes:</h4>' .
-                                '<div style="max-height: 200px; overflow-y: auto;">' .
-                                '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">' .
-                                '<thead>' .
-                                '<tr style="background-color: #f2f2f2;">' .
-                                '<th style="padding: 5px; text-align: left; border: 1px solid #ddd;">Date</th>' .
-                                '<th style="padding: 5px; text-align: left; border: 1px solid #ddd;">Commercial</th>' .
-                                '<th style="padding: 5px; text-align: right; border: 1px solid #ddd;">Tarif total HT</th>' .
-                                '<th style="padding: 5px; text-align: left; border: 1px solid #ddd;">Produits</th>' .
-                                '<th style="padding: 5px; text-align: left; border: 1px solid #ddd;">Complément</th>' .
-                                '<th style="padding: 5px; text-align: left; border: 1px solid #ddd;">Statut</th>' .
-                                '</tr>' .
-                                '</thead>' .
+                                '<div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">'.
+                                '<h4 style="margin: 0 0 5px 0;">Ventes précédentes:</h4>'.
+                                '<div style="max-height: 200px; overflow-y: auto;">'.
+                                '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">'.
+                                '<thead>'.
+                                '<tr style="background-color: #f2f2f2;">'.
+                                '<th style="padding: 5px; text-align: left; border: 1px solid #ddd;">Date</th>'.
+                                '<th style="padding: 5px; text-align: left; border: 1px solid #ddd;">Commercial</th>'.
+                                '<th style="padding: 5px; text-align: right; border: 1px solid #ddd;">Tarif total HT</th>'.
+                                '<th style="padding: 5px; text-align: left; border: 1px solid #ddd;">Produits</th>'.
+                                '<th style="padding: 5px; text-align: left; border: 1px solid #ddd;">Complément</th>'.
+                                '<th style="padding: 5px; text-align: left; border: 1px solid #ddd;">Statut</th>'.
+                                '</tr>'.
+                                '</thead>'.
                                 '<tbody>';
 
                             foreach ($previousSales as $sale) {
                                 $saleDate = $sale->date ? $sale->date->format('d/m/Y') : 'N/A';
 
                                 // Get the commercial information
-                                //$saleCommercial = User::find($sale->id_commercial);
-                                $saleCommercialName = $sale->commercial_nom ? $sale->commercial_prenom . ' ' . $sale->commercial_nom : 'N/A';
+                                // $saleCommercial = User::find($sale->id_commercial);
+                                $saleCommercialName = $sale->commercial_nom ? $sale->commercial_prenom.' '.$sale->commercial_nom : 'N/A';
 
                                 // Format the total price before tax
-                                $totalHT = number_format($sale->tarif_total_ht, 0, ',', ' ') . ' €';
+                                $totalHT = number_format($sale->tarif_total_ht, 0, ',', ' ').' €';
 
                                 // Determine status text based on statut value
                                 $statusText = 'N/A';
@@ -264,14 +270,14 @@ class Map extends Component
                                 if ($sale->poses->count() > 0) {
                                     $productsHtml = '<ul style="margin: 0; padding-left: 15px;">';
                                     foreach ($sale->poses as $pose) {
-                                        if (!empty($pose->produit)) {
-                                            $productsHtml .= '<li>' . $pose->produit . '</li>';
+                                        if (! empty($pose->produit)) {
+                                            $productsHtml .= '<li>'.$pose->produit.'</li>';
                                         }
-                                        if (!empty($pose->produit2)) {
-                                            $productsHtml .= '<li>' . $pose->produit2 . '</li>';
+                                        if (! empty($pose->produit2)) {
+                                            $productsHtml .= '<li>'.$pose->produit2.'</li>';
                                         }
-                                        if (!empty($pose->produit3)) {
-                                            $productsHtml .= '<li>' . $pose->produit3 . '</li>';
+                                        if (! empty($pose->produit3)) {
+                                            $productsHtml .= '<li>'.$pose->produit3.'</li>';
                                         }
                                     }
                                     $productsHtml .= '</ul>';
@@ -280,13 +286,13 @@ class Map extends Component
                                 }
 
                                 $salesTableHtml .=
-                                    '<tr style="border-bottom: 1px solid #ddd;">' .
-                                    '<td style="padding: 5px; border: 1px solid #ddd;">' . $saleDate . '</td>' .
-                                    '<td style="padding: 5px; border: 1px solid #ddd;">' . $saleCommercialName . '</td>' .
-                                    '<td style="padding: 5px; text-align: right; border: 1px solid #ddd;">' . $totalHT . '</td>' .
-                                    '<td style="padding: 5px; border: 1px solid #ddd;">' . $productsHtml . '</td>' .
-                                    '<td style="padding: 5px; border: 1px solid #ddd;">' . htmlspecialchars($sale->complement ?? '') . '</td>' .
-                                    '<td style="padding: 5px; border: 1px solid #ddd;">' . $statusText . '</td>' .
+                                    '<tr style="border-bottom: 1px solid #ddd;">'.
+                                    '<td style="padding: 5px; border: 1px solid #ddd;">'.$saleDate.'</td>'.
+                                    '<td style="padding: 5px; border: 1px solid #ddd;">'.$saleCommercialName.'</td>'.
+                                    '<td style="padding: 5px; text-align: right; border: 1px solid #ddd;">'.$totalHT.'</td>'.
+                                    '<td style="padding: 5px; border: 1px solid #ddd;">'.$productsHtml.'</td>'.
+                                    '<td style="padding: 5px; border: 1px solid #ddd;">'.htmlspecialchars($sale->complement ?? '').'</td>'.
+                                    '<td style="padding: 5px; border: 1px solid #ddd;">'.$statusText.'</td>'.
                                     '</tr>';
                             }
 
@@ -295,44 +301,44 @@ class Map extends Component
                     }
 
                     // Build the full content HTML
-                    $markerData['content'] = '<div style="padding: 5px;">' .
-                        '<strong>' . $client->nom . '</strong><br>' .
-                        $client->adresse . '<br>' .
-                        'Par: ' . $commercialName . '<br>' .
-                        'Ajouté: ' . $addedDate . '<br>' .
-                        '<a href="/relances/contact/'. $client->id .'/edit" style="color: blue; text-decoration: underline;">Voir la fiche</a>' .
+                    $markerData['content'] = '<div style="padding: 5px;">'.
+                        '<strong>'.$client->nom.'</strong><br>'.
+                        $client->adresse.'<br>'.
+                        'Par: '.$commercialName.'<br>'.
+                        'Ajouté: '.$addedDate.'<br>'.
+                        '<a href="/relances/contact/'.$client->id.'/edit" style="color: blue; text-decoration: underline;">Voir la fiche</a>'.
                         (in_array($client->type, [0, 6, 7, 8]) ?
-                            '<label>Statut : </label><span>'. StatsContactsServices::ClientTypes()[$client->type] . '</span>'.
-                            '<form id="updateTypeForm-' . $client->id . '" class="update-type-form" style="margin-top: 10px;">' .
-                            '<select name="type" class="type-select" data-client-id="' . $client->id . '">' .
-                            '<option value="0"' . ($client->type == 0 ? ' selected' : '') . '>Précontact</option>' .
-                            '<option value="6"' . ($client->type == 6 ? ' selected' : '') . '>Refus</option>' .
-                            '<option value="7"' . ($client->type == 7 ? ' selected' : '') . '>Absent</option>' .
-                            '<option value="8"' . ($client->type == 8 ? ' selected' : '') . '>Relance</option>' .
-                            '</select>' .
-                            '</form>' : '') .
-                        $salesTableHtml .
-                        '<div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">' .
-                        '<h4 style="margin: 0 0 5px 0;">Dernier commentaire:</h4>' .
+                            '<label>Statut : </label><span>'.StatsContactsServices::ClientTypes()[$client->type].'</span>'.
+                            '<form id="updateTypeForm-'.$client->id.'" class="update-type-form" style="margin-top: 10px;">'.
+                            '<select name="type" class="type-select" data-client-id="'.$client->id.'">'.
+                            '<option value="0"'.($client->type == 0 ? ' selected' : '').'>Précontact</option>'.
+                            '<option value="6"'.($client->type == 6 ? ' selected' : '').'>Refus</option>'.
+                            '<option value="7"'.($client->type == 7 ? ' selected' : '').'>Absent</option>'.
+                            '<option value="8"'.($client->type == 8 ? ' selected' : '').'>Relance</option>'.
+                            '</select>'.
+                            '</form>' : '').
+                        $salesTableHtml.
+                        '<div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">'.
+                        '<h4 style="margin: 0 0 5px 0;">Dernier commentaire:</h4>'.
                         ($lastComment ?
-                            '<div style="background-color: #f5f5f5; padding: 5px; border-radius: 3px; margin-bottom: 10px;">' .
-                            '<p style="margin: 0;">' . $lastComment->commentaire . '</p>' .
-                            '<small style="color: #666;">Par: ' . ($lastComment->user ? $lastComment->user->prenom . ' ' . $lastComment->user->nom : 'Inconnu') . ' - ' . $lastComment->date->format('d/m/Y') . '</small>' .
+                            '<div style="background-color: #f5f5f5; padding: 5px; border-radius: 3px; margin-bottom: 10px;">'.
+                            '<p style="margin: 0;">'.$lastComment->commentaire.'</p>'.
+                            '<small style="color: #666;">Par: '.($lastComment->user ? $lastComment->user->prenom.' '.$lastComment->user->nom : 'Inconnu').' - '.$lastComment->date->format('d/m/Y').'</small>'.
                             '</div>' :
-                            '<p style="color: #666; font-style: italic; margin: 0 0 10px 0;">Aucun commentaire</p>') .
-                        '<form id="commentForm-' . $client->id . '" class="comment-form" style="margin-top: 10px;">' .
-                        '<input type="hidden" name="client_id" value="' . $client->id . '">' .
-                        '<textarea name="commentaire" placeholder="Ajouter un commentaire" style="width: 100%; min-height: 60px; margin-bottom: 5px; padding: 5px;"></textarea>' .
-                        '<button type="submit" style="background-color: #4CAF50; color: white; border: none; padding: 5px 10px; text-align: center; text-decoration: none; display: inline-block; font-size: 12px; margin: 2px 2px; cursor: pointer; border-radius: 3px;">Envoyer</button>' .
-                        '</form>' .
-                        '</div>' .
+                            '<p style="color: #666; font-style: italic; margin: 0 0 10px 0;">Aucun commentaire</p>').
+                        '<form id="commentForm-'.$client->id.'" class="comment-form" style="margin-top: 10px;">'.
+                        '<input type="hidden" name="client_id" value="'.$client->id.'">'.
+                        '<textarea name="commentaire" placeholder="Ajouter un commentaire" style="width: 100%; min-height: 60px; margin-bottom: 5px; padding: 5px;"></textarea>'.
+                        '<button type="submit" style="background-color: #4CAF50; color: white; border: none; padding: 5px 10px; text-align: center; text-decoration: none; display: inline-block; font-size: 12px; margin: 2px 2px; cursor: pointer; border-radius: 3px;">Envoyer</button>'.
+                        '</form>'.
+                        '</div>'.
                         '</div>';
                 } else {
                     // For zoomed out views, just provide minimal info for the tooltip
-                    $markerData['content'] = '<div style="padding: 5px;">' .
-                        '<strong>' . $client->nom . ' ' . $client->prenom . '</strong><br>' .
-                        $client->adresse . '<br>' .
-                        '<a href="/relances/contact/'. $client->id .'/edit" style="color: blue; text-decoration: underline;">Voir la fiche</a>' .
+                    $markerData['content'] = '<div style="padding: 5px;">'.
+                        '<strong>'.$client->nom.' '.$client->prenom.'</strong><br>'.
+                        $client->adresse.'<br>'.
+                        '<a href="/relances/contact/'.$client->id.'/edit" style="color: blue; text-decoration: underline;">Voir la fiche</a>'.
                         '</div>';
                 }
 
@@ -351,9 +357,9 @@ class Map extends Component
                 ->header('Cache-Control', 'public, max-age=300'); // 5 minutes
         } catch (\Exception $e) {
             // Log the error for debugging
-            \Log::error('Error fetching map points: ' . $e->getMessage(), [
+            \Log::error('Error fetching map points: '.$e->getMessage(), [
                 'exception' => $e,
-                'request_params' => $request->all()
+                'request_params' => $request->all(),
             ]);
 
             // Clean output buffer before returning error response
@@ -362,7 +368,7 @@ class Map extends Component
             // Return a JSON error response
             return response()->json([
                 'error' => 'An error occurred while fetching map points',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -396,7 +402,7 @@ class Map extends Component
         'clientSaved' => 'handleClientSaved',
         'clientDeleted' => 'handleClientDeleted',
         'formOpened' => 'handleFormOpened',
-        'formClosed' => 'handleFormClosed'
+        'formClosed' => 'handleFormClosed',
     ];
 
     /**

@@ -8,19 +8,30 @@ use Livewire\Component;
 
 class FormulaireAutoModify extends Component
 {
-
     public $id;
+
     public $immat = '';
+
     public $modele = '';
+
     public $selectedConducteur = '';
+
     public $date_attribution;
+
     public $conducteurs = [];
+
     public $secteur = null;
+
     public $date_ct = '';
+
     public $date_rev = '';
+
     public $date_pol = '';
+
     public $kmMensuels = [];
+
     public $months = [];
+
     public $secteurs = [];
 
     public function mount($id = null)
@@ -28,21 +39,21 @@ class FormulaireAutoModify extends Component
         $commerciaux = DB::table('users')
             ->where('active', 1)
             ->get()
-            ->map(fn($c) => $c->nom.' '.$c->prenom)
+            ->map(fn ($c) => $c->nom.' '.$c->prenom)
             ->toArray();
 
         $poseurs = DB::table('poseurs')
-			->where('archive',0)
+            ->where('archive', 0)
             ->pluck('poseur')
             ->toArray();
-			
+
         $this->secteurs = DB::table('secteurs')->where('activated', 1)->get();
 
         $this->conducteurs = [
             'commerciaux' => $commerciaux,
             'poseurs' => $poseurs,
         ];
-            $this->loadVehicule($id);
+        $this->loadVehicule($id);
 
         $this->months = collect();
         for ($i = 9; $i >= 0; $i--) {
@@ -84,24 +95,26 @@ class FormulaireAutoModify extends Component
             'secteur' => 'required',
             'date_ct' => 'nullable | date',
             'date_rev' => 'nullable | date',
-            'date_pol' => 'nullable | date'
+            'date_pol' => 'nullable | date',
         ]);
 
         DB::table('parc_auto')->where('id', $this->id)->update([
-                'immatriculation' => $this->immat,
-                'modele' => $this->modele,
-                'conducteur' => $this->selectedConducteur,
-                'date_attribution' => $this->date_attribution,
-                'secteur' => $this->secteur,
-                'date_ct' => $this->date_ct ? $this->date_ct : null,
-                'date_rev' => $this->date_rev ? $this->date_rev : null,
-                'date_pol' => $this->date_pol ? $this->date_pol : null,
-            ]);
+            'immatriculation' => $this->immat,
+            'modele' => $this->modele,
+            'conducteur' => $this->selectedConducteur,
+            'date_attribution' => $this->date_attribution,
+            'secteur' => $this->secteur,
+            'date_ct' => $this->date_ct ? $this->date_ct : null,
+            'date_rev' => $this->date_rev ? $this->date_rev : null,
+            'date_pol' => $this->date_pol ? $this->date_pol : null,
+        ]);
 
         $this->saveKmMensuels();
         session()->flash('message', 'Véhicule enregistré.');
+
         return redirect('/parc-auto');
     }
+
     public function loadKmMensuels()
     {
         $this->kmMensuels = [];
@@ -125,6 +138,7 @@ class FormulaireAutoModify extends Component
             ];
         }
     }
+
     public function saveKmMensuels()
     {
         foreach ($this->kmMensuels as $kmData) {
@@ -150,9 +164,8 @@ class FormulaireAutoModify extends Component
         session()->flash('message', 'Km mensuels enregistrés.');
     }
 
-    public function updatedKmMensuels($value, $key)
-    {
-    }
+    public function updatedKmMensuels($value, $key) {}
+
     public function cancel()
     {
         return redirect('/parc-auto');

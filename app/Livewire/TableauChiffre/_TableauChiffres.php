@@ -2,29 +2,40 @@
 
 namespace App\Livewire\TableauChiffre;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
-use App\Models\User;
 
 class TableauChiffres extends Component
 {
     public $month;
+
     public $year;
+
     public $groupes = [];
+
     public $isDirecteur = false;
+
     public $isTelepro = false;
+
     public $isAdmin = false;
+
     public $sortColumn = 'nom';
+
     public $sortDirection = 'asc';
+
     public $ventes = [];
+
     public $projets = [];
+
     public $rdvs = [];
+
     public $totauxGlobaux;
+
     public $totauxSecteur;
 
-    
     protected $listeners = ['filters-updated' => 'applyFilters'];
 
     public function mount($year = null, $month = null)
@@ -35,21 +46,24 @@ class TableauChiffres extends Component
         $this->loadGroupes();
     }
 
-    private function initializeUserData(){
+    private function initializeUserData()
+    {
         $userData = TableauChiffres::getInitializedUserData();
         $this->isAdmin = $userData->isAdmin;
         $this->isDirecteur = $userData->isDirecteur;
         $this->isTelepro = $userData->isTelepro;
     }
 
-    public static function getInitializedUserData(){
+    public static function getInitializedUserData()
+    {
         $user = Auth::user();
-        $result = (object)[
+        $result = (object) [
             'isDirecteur' => $user->hasRole('directeur'),
             'isTelepro' => $user->hasRole('telepro'),
-            'isAdmin' => $user->hasRole('admin')
+            'isAdmin' => $user->hasRole('admin'),
 
         ];
+
         return $result;
     }
 
@@ -143,7 +157,7 @@ class TableauChiffres extends Component
             ->where('c.rentre_par', $userId)
             ->where('p.rdv_annule', 0)
             ->whereBetween('p.date_confirmation', [$startDate, $endDate])
-            //->where('p.secteur', $groupe->secteur)
+            // ->where('p.secteur', $groupe->secteur)
             ->selectRaw('count(p.id) as total')
             ->first();
 
@@ -155,11 +169,11 @@ class TableauChiffres extends Component
         [$startDate, $endDate] = $this->getDateRange();
 
         $results = DB::table('clients as c')
-        ->leftJoin('projets as p', 'c.id', '=', 'p.id_client')
-        ->select(
-            DB::raw("DATE_FORMAT(p.date_confirmation, '%Y-%u') as annee_semaine"),
-            DB::raw('COUNT(p.id) as cpt'),
-            DB::raw("
+            ->leftJoin('projets as p', 'c.id', '=', 'p.id_client')
+            ->select(
+                DB::raw("DATE_FORMAT(p.date_confirmation, '%Y-%u') as annee_semaine"),
+                DB::raw('COUNT(p.id) as cpt'),
+                DB::raw('
                 SUM(
                     CASE 
                         WHEN p.date IS NOT NULL 
@@ -173,20 +187,21 @@ class TableauChiffres extends Component
                         THEN 1 ELSE 0 
                     END
                 ) as rdv48h
-            ")
-        )
-        ->where('c.rentre_par', $userId)
-        ->where('p.rdv_annule', 0)
-        ->whereBetween('p.date_confirmation', [$startDate, $endDate])
-        ->groupBy('annee_semaine')
-        ->orderBy('annee_semaine')
-        ->get();
+            ')
+            )
+            ->where('c.rentre_par', $userId)
+            ->where('p.rdv_annule', 0)
+            ->whereBetween('p.date_confirmation', [$startDate, $endDate])
+            ->groupBy('annee_semaine')
+            ->orderBy('annee_semaine')
+            ->get();
 
         $last48h = 0;
 
-        foreach($results as $data){
+        foreach ($results as $data) {
             $last48h += $data->rdv48h;
         }
+
         return $last48h;
 
     }
@@ -205,6 +220,7 @@ class TableauChiffres extends Component
 
             $caParSemaine[] = $commune + $normal;
         }
+
         return $caParSemaine;
     }
 
@@ -239,6 +255,7 @@ class TableauChiffres extends Component
             $weeks[] = [$start->day, $end->day];
             $current = $end->addDay();
         }
+
         return $weeks;
     }
 
@@ -276,34 +293,35 @@ class TableauChiffres extends Component
             ->leftJoin('projets as p', 'p.id_client', '=', 'c.id')
             ->select([
                 DB::raw('COALESCE(SUM(p.rdv_annule), 0) as cpt'),
-                DB::raw('COALESCE(SUM(p.rdv_confirme), 0) as rdv')
+                DB::raw('COALESCE(SUM(p.rdv_confirme), 0) as rdv'),
             ])
             ->where('c.rentre_par', $userId)
-            //->where('c.secteur', $groupe->secteur)
-            ->where(function($query) use($startDate, $endDate){
-                $query->where(function($subQuery) use($startDate, $endDate){
+            // ->where('c.secteur', $groupe->secteur)
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->where(function ($subQuery) use ($startDate, $endDate) {
                     // Cas 1: rdv_confirme = 0 AND date_ajout between dates
                     $subQuery->where('p.rdv_confirme', 0)
                         ->whereBetween('p.date_ajout', [$startDate, $endDate]);
                 })
-                ->orWhere(function($subQuery) use($startDate, $endDate){
-                    // Cas 2: rdv_confirme = 1 avec deux sous-conditions
-                    $subQuery->where('p.rdv_confirme', 1)
-                        ->where(function($innerQuery) use($startDate, $endDate){
-                            $innerQuery->where(function($condition1) use($startDate, $endDate){
-                                // Condition 1: datediff <= 2 AND date_ajout between dates
-                                $condition1->whereRaw('DATEDIFF(p.date, p.date_ajout) <= 2')
-                                    ->whereBetween('p.date_ajout', [$startDate, $endDate]);
-                            })
-                            ->orWhere(function($condition2) use($startDate, $endDate){
-                                // Condition 2: datediff > 2 AND date_confirmation between dates
-                                $condition2->whereRaw('DATEDIFF(p.date, p.date_ajout) > 2')
-                                    ->whereBetween('p.date_confirmation', [$startDate, $endDate]);
+                    ->orWhere(function ($subQuery) use ($startDate, $endDate) {
+                        // Cas 2: rdv_confirme = 1 avec deux sous-conditions
+                        $subQuery->where('p.rdv_confirme', 1)
+                            ->where(function ($innerQuery) use ($startDate, $endDate) {
+                                $innerQuery->where(function ($condition1) use ($startDate, $endDate) {
+                                    // Condition 1: datediff <= 2 AND date_ajout between dates
+                                    $condition1->whereRaw('DATEDIFF(p.date, p.date_ajout) <= 2')
+                                        ->whereBetween('p.date_ajout', [$startDate, $endDate]);
+                                })
+                                    ->orWhere(function ($condition2) use ($startDate, $endDate) {
+                                        // Condition 2: datediff > 2 AND date_confirmation between dates
+                                        $condition2->whereRaw('DATEDIFF(p.date, p.date_ajout) > 2')
+                                            ->whereBetween('p.date_confirmation', [$startDate, $endDate]);
+                                    });
                             });
-                        });
-                });
+                    });
             })
             ->first();
+
         return $result;
     }
 
@@ -331,34 +349,33 @@ class TableauChiffres extends Component
         [$startDate, $endDate] = $this->getDateRange();
 
         $result = DB::table('clients as c')
-        ->leftJoin('projets as p', 'p.id_client', '=', 'c.id')
-        ->select(
-            DB::raw('COALESCE(SUM(p.rdv_annule), 0) as cpt'),
-            DB::raw('COALESCE(SUM(p.rdv_confirme), 0) as rdv')
-        )
-        ->where('c.rentre_par', $userId)
-        ->where(function($query) use ($startDate, $endDate) {
-            $query
-                ->where(function($q) use ($startDate, $endDate) {
-                    $q->where('p.rdv_confirme', 0)
-                    ->whereBetween('p.date_ajout', [$startDate, $endDate]);
-                })
-                ->orWhere(function($q) use ($startDate, $endDate) {
-                    $q->where('p.rdv_confirme', 1)
-                    ->where(function($q2) use($startDate, $endDate) {
-                        $q2
-                            ->whereRaw('DATEDIFF(p.date, p.date_ajout) <= 2')
-                            ->whereBetween('p.date_ajout', [$startDate, $endDate])
-                        ->orWhere(function($q3) use($startDate, $endDate) {
-                            $q3
-                                ->whereRaw('DATEDIFF(p.date, p.date_ajout) > 2')
-                                ->whereBetween('p.date_confirmation', [$startDate, $endDate]);
-                        });
+            ->leftJoin('projets as p', 'p.id_client', '=', 'c.id')
+            ->select(
+                DB::raw('COALESCE(SUM(p.rdv_annule), 0) as cpt'),
+                DB::raw('COALESCE(SUM(p.rdv_confirme), 0) as rdv')
+            )
+            ->where('c.rentre_par', $userId)
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query
+                    ->where(function ($q) use ($startDate, $endDate) {
+                        $q->where('p.rdv_confirme', 0)
+                            ->whereBetween('p.date_ajout', [$startDate, $endDate]);
+                    })
+                    ->orWhere(function ($q) use ($startDate, $endDate) {
+                        $q->where('p.rdv_confirme', 1)
+                            ->where(function ($q2) use ($startDate, $endDate) {
+                                $q2
+                                    ->whereRaw('DATEDIFF(p.date, p.date_ajout) <= 2')
+                                    ->whereBetween('p.date_ajout', [$startDate, $endDate])
+                                    ->orWhere(function ($q3) use ($startDate, $endDate) {
+                                        $q3
+                                            ->whereRaw('DATEDIFF(p.date, p.date_ajout) > 2')
+                                            ->whereBetween('p.date_confirmation', [$startDate, $endDate]);
+                                    });
+                            });
                     });
-                });
-        })
-        ->first();
-
+            })
+            ->first();
 
         $cpt = $result->cpt ?? 0;
         $vente = $result->rdv ?? 0;
@@ -366,7 +383,8 @@ class TableauChiffres extends Component
         return $cpt > 0 && $vente > 0 ? round(($cpt / $vente) * 100) : null;
     }
 
-    public function calcMarge($userId) {
+    public function calcMarge($userId)
+    {
         [$startDate, $endDate] = $this->getDateRange();
 
         $result = DB::table('ventes')
@@ -384,6 +402,7 @@ class TableauChiffres extends Component
     {
         $startDate = Carbon::createFromDate($this->year, $this->month, 1)->startOfMonth()->toDateString();
         $endDate = Carbon::createFromDate($this->year, $this->month, 1)->endOfMonth()->toDateString();
+
         return [$startDate, $endDate];
     }
 
@@ -401,9 +420,10 @@ class TableauChiffres extends Component
         $groupesAvecUsers = $this->processGroupes($groupes, $startDate, $endDate, $user, $global, $globalSecteur);
         $this->finalizeGlobalTotals($global, $globalSecteur);
 
-        foreach($groupesAvecUsers as $index => $groupe){
-            if($groupe->id_secteur != session('selectedSecteur'))
+        foreach ($groupesAvecUsers as $index => $groupe) {
+            if ($groupe->id_secteur != session('selectedSecteur')) {
                 unset($groupesAvecUsers[$index]);
+            }
         }
 
         $this->groupes = $groupesAvecUsers;
@@ -446,7 +466,7 @@ class TableauChiffres extends Component
 
     private function initializeGlobalTotals()
     {
-        return (object)[
+        return (object) [
             'somme_objectif_ca' => 0,
             'somme_objectif_rdv' => 0,
             'somme_ca_realise' => 0,
@@ -462,7 +482,7 @@ class TableauChiffres extends Component
             'somme_deperdition' => null,
             'somme_rdv48h' => 0,
             'somme_marge' => 0,
-            'denominateur' => 0
+            'denominateur' => 0,
         ];
     }
 
@@ -491,42 +511,42 @@ class TableauChiffres extends Component
     public static function buildUsersQuery($groupe, $startDate, $endDate, $user, $isAdmin, $isDirecteur, $isTelepro)
     {
         $usersQuery = User::select('users.id', 'users.name', 'users.nom', 'users.prenom', 'users.objectif_ca',
-            'obj.ca as obj_objectif_ca', 'users.objectif_rdv', 'type', 'directeur', 'groupe', 'telepro', 'prospecteur', 
+            'obj.ca as obj_objectif_ca', 'users.objectif_rdv', 'type', 'directeur', 'groupe', 'telepro', 'prospecteur',
             'junior', 'role', 'contrat', 'users.active', 'nouveau_vendeur', 'date_entree')
-            ->leftJoin('objectifs as obj', function($join) use($startDate){
+            ->leftJoin('objectifs as obj', function ($join) use ($startDate) {
                 $join->on('obj.id_commercial', '=', 'users.id')
-                ->where('obj.date', '=', $startDate);
+                    ->where('obj.date', '=', $startDate);
             })
             ->where('groupe', $groupe->id)
             /*->whereDate('date_entree', '<=', $endDate)
             ->where(function ($q) use ($startDate) {
                 $q->whereNull('delete')->orWhereDate('delete', '>=', $startDate);
             })*/
-            ->where(function($query) use ($startDate, $endDate, $groupe) {
+            ->where(function ($query) use ($startDate, $endDate, $groupe) {
                 $query->where('users.active', '1')
-                ->orWhere(function($q) use ($startDate, $endDate, $groupe) {
-                    $q->whereIn('users.id', function($subquery) use ($startDate, $endDate, $groupe) {
-                        $subquery->select(DB::raw('DISTINCT id_commercial'))
-                            ->from('ventes')
-                            ->whereBetween('date', [
-                                $startDate,
-                                $endDate
-                            ])
-                            ->where('secteur', $groupe->secteur);
-                    })
-                    ->where('users.active', '0');
-                });
+                    ->orWhere(function ($q) use ($startDate, $endDate, $groupe) {
+                        $q->whereIn('users.id', function ($subquery) use ($startDate, $endDate, $groupe) {
+                            $subquery->select(DB::raw('DISTINCT id_commercial'))
+                                ->from('ventes')
+                                ->whereBetween('date', [
+                                    $startDate,
+                                    $endDate,
+                                ])
+                                ->where('secteur', $groupe->secteur);
+                        })
+                            ->where('users.active', '0');
+                    });
             })
-            ->join('secteur_commercials as secteur', function($join) use($groupe){
+            ->join('secteur_commercials as secteur', function ($join) use ($groupe) {
                 $join->on('secteur.id_commercial', '=', 'users.id')
-                ->where('secteur.id_secteur', '=', $groupe->secteur);
+                    ->where('secteur.id_secteur', '=', $groupe->secteur);
             })
             ->orderByDesc('active')
             ->orderByRaw('ISNULL(date_entree) ASC')
             ->orderBy('date_entree')
             ->orderBy('nom');
 
-        if (!$isAdmin && !$isDirecteur) {
+        if (! $isAdmin && ! $isDirecteur) {
             if ($groupe->id !== null) {
                 $usersQuery->where('groupe', $groupe->id);
             } else {
@@ -553,7 +573,7 @@ class TableauChiffres extends Component
     private function calculateGroupeData($groupe)
     {
         foreach ($groupe->users as $index => $user) {
-            
+
             $this->calculateUserData($user, $groupe);
             /*if($user->nb_ventes == 0)
                 unset($groupe->users[$index]);*/
@@ -584,16 +604,16 @@ class TableauChiffres extends Component
         $count_ventes = $this->calculerPaniermoyen($user->id);
         $user->denominateur = 0;
         $user->denominateurGroupe = 0;
-        foreach($count_ventes as $vente){
-            if($vente->type_vente == "Commune"){
+        foreach ($count_ventes as $vente) {
+            if ($vente->type_vente == 'Commune') {
                 $user->denominateur += $vente->total;
                 $user->denominateurGroupe += $vente->total / 2;
-			}else{
+            } else {
                 $user->denominateur += $vente->total;
                 $user->denominateurGroupe += $vente->total;
-			}
+            }
         }
-        
+
         $user->panier_moyen = $user->denominateur > 0 ? $user->ca_realise / $user->denominateur : 0;
 
         $rdv48h = $this->rdv48hDernieres($user->id);
@@ -619,6 +639,7 @@ class TableauChiffres extends Component
         $dateEntree = Carbon::parse($dateEntree)->startOfDay();
         $debut = now()->startOfDay()->subMonths(3);
         $fin = now()->startOfDay()->subMonths(3)->addDays(21);
+
         return $dateEntree->between($debut, $fin);
     }
 
@@ -644,7 +665,7 @@ class TableauChiffres extends Component
             : 0;
 
         $groupe_denominateur = 0;
-        foreach ($groupe->users as $user){
+        foreach ($groupe->users as $user) {
             $groupe_denominateur += $user->denominateurGroupe;
             foreach ($user->ca_par_semaine as $i => $val) {
                 $groupe->somme_ca_par_semaine[$i] += $val;
@@ -670,11 +691,11 @@ class TableauChiffres extends Component
         $global->denominateur += $groupe->denominateur;
         $global->somme_panier_moyen = ($global->denominateur > 0) ? $global->somme_ca_realise / $global->denominateur : 0;
 
-        foreach($groupe->somme_ca_par_semaine as $i => $val){
+        foreach ($groupe->somme_ca_par_semaine as $i => $val) {
             $global->somme_ca_par_semaine[$i] += $val;
         }
 
-        if($groupe->id_secteur == session('selectedSecteur')){
+        if ($groupe->id_secteur == session('selectedSecteur')) {
             $globalSecteur->somme_objectif_ca += $groupe->somme_objectif_ca;
             $globalSecteur->somme_objectif_rdv += $groupe->somme_objectif_rdv;
             $globalSecteur->somme_ca_realise += $groupe->somme_ca_realise;
@@ -687,12 +708,12 @@ class TableauChiffres extends Component
             $globalSecteur->somme_rdv48h += $groupe->somme_rdv48h;
             $globalSecteur->somme_marge += $groupe->somme_marge;
             $globalSecteur->denominateur += $groupe->denominateur;
-            $globalSecteur->somme_panier_moyen = ($globalSecteur->denominateur > 0 ) ? $globalSecteur->somme_ca_realise / $globalSecteur->denominateur : 0;
-            foreach($groupe->somme_ca_par_semaine as $i => $val){
+            $globalSecteur->somme_panier_moyen = ($globalSecteur->denominateur > 0) ? $globalSecteur->somme_ca_realise / $globalSecteur->denominateur : 0;
+            foreach ($groupe->somme_ca_par_semaine as $i => $val) {
                 $globalSecteur->somme_ca_par_semaine[$i] += $val;
             }
         }
-        
+
     }
 
     private function finalizeGlobalTotals($global, $globalSecteur)
@@ -720,7 +741,7 @@ class TableauChiffres extends Component
         $globalSecteur->pourcentage_rdv48h = $globalSecteur->somme_rdv_effectues > 0
             ? round(($globalSecteur->somme_rdv48h / $globalSecteur->somme_rdv_effectues) * 100, 2)
             : 0;
-            
+
     }
 
     public function render()

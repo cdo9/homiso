@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::table('parc_auto', function (Blueprint $table) {
             $table->date('date_ct')->nullable();
             $table->date('date_rev')->nullable();
-            $table->date('date_pol')->nullable();    
-        
+            $table->date('date_pol')->nullable();
+
         });
     }
 
