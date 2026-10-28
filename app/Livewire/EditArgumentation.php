@@ -452,8 +452,8 @@ class EditArgumentation extends Component
             $taux_remise = 1 - ($prix_vente_total / $prix_tarif_total);
         }
 
-        $this->marge = round($prix_marge, 0);
-        $this->remise = round($taux_remise * 100, 0);
+        $this->marge = (int) round($prix_marge, 0);
+        $this->remise = (int) round($taux_remise * 100, 0);
     }
 
     public function refreshRepartition()
