@@ -108,8 +108,8 @@
                         class="w-full border border-gray-300 rounded-md px-2 py-1 text-sm">
                     <option value="">Sélectionner un groupe</option>
                     @foreach($groupes as $g)
-						<option value="{{ $g->id }}" {{ $u->groupe == $g->id ? 'selected' : '' }}>
-							{{ $g->nom }} - {{$g->secteurRel->nom}}
+						<option value="{{ $g->id }}">
+							{{ $g->nom }} - {{ $g->secteurRel?->nom }}
 						</option>
 					@endforeach
                 </select>
