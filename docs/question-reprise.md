@@ -10,7 +10,7 @@
 ## 1. Accès et passation (bloquant)
 
 - [ ] Existe-t-il un **dépôt Git d'origine** (GitHub, GitLab, Bitbucket) avec l'historique ? On a reçu le code sans `.git`. Pourtant `qodana.yaml` mentionne un « CI/CD pipeline » : où tournait-il ?
-- [ ] Quels **accès** faut-il nous transmettre ? Espace client OVH, FTP/SSH, phpMyAdmin, Spot-Hit, Google Cloud (clé Maps), noms de domaine.
+- [ ] Quels **accès** faut-il nous transmettre ? Espace client OVH, FTP/SSH, phpMyAdmin, Spot-Hit, Google Cloud (clé Maps), noms de domaine. > a voir au client / regarder sur OVH
 - [ ] Où se trouve le **`.env` de production** ? Qui d'autre que toi en a une copie ? Quelles valeurs y ont **`APP_ENV`** et **`APP_DEBUG`** ? (Si `APP_ENV=local`, Telescope est chargé et tout est journalisé.)
 - [ ] Le mot de passe MySQL de prod est dans `public/import.php` (audit §1). Peut-on le changer sans casser autre chose : un script, un outil, une autre appli qui l'utiliserait ?
 - [ ] La clé API Spot-Hit est en dur dans `DispatchPlannedSms.php`. Peut-on la **régénérer** côté Spot-Hit sans impact ailleurs ?
@@ -18,13 +18,14 @@
 
 ## 2. Serveur
 
-- [ ] Quelle **offre d'hébergement OVH** exactement (Perso, Pro, Performance, VPS) ? Le **SSH** est-il disponible ?
+- [ ] Quelle **offre d'hébergement OVH** exactement (Perso, Pro, Performance, VPS) ? Le **SSH** est-il disponible ? > Offre Perso p-e Pro
 - [ ] Quelle **version de PHP** tourne réellement pour le site ? `.ovhconfig` dit 8.3, `qodana.yaml` dit 8.2, phpMyAdmin tourne en 8.4.
 - [ ] Le dossier racine du site pointe-t-il bien sur **`public/`** ? Ou sur la racine du projet, ce qui exposerait `.env`, `vendor/`, etc. ?
 - [ ] Y a-t-il **plusieurs environnements** (prod, préprod/staging), ou seulement la prod ?
 - [ ] Consultes-tu les **logs** de prod de temps en temps ? Y a-t-il des erreurs récurrentes connues ?
 - [ ] Y a-t-il des **sauvegardes** de la base (OVH automatiques, manuelles) ? Où, et à quelle fréquence ?
 - [ ] Quel est le **domaine** de prod ? Le HTTPS est-il géré par OVH (Let's Encrypt) ?
+
 
 ## 3. Déploiement
 
