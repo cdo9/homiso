@@ -25,8 +25,13 @@ Ce document liste les problèmes **restant à traiter** dans le code récupéré
 | 11 | Anciens fichiers laissés dans `app/` (`_TableauChiffres.php`, `old_Map.php`) | 🟡 Faible | ❌ À supprimer |
 | 12 | Paquets inutiles : `yoeunes/toastr` (paquet vide) et `ovh/ovh` (jamais utilisé) | 🟡 Faible | ✅ Retirés |
 | 13 | 4 pages en erreur 500 (commissions, gestion-commerciaux, rattrapage, tableau-chiffres) | 🔴 Élevée | ❌ À analyser |
-| 14 | Pas de vrais tests (seul le test d'exemple Laravel, en échec) | 🟠 Moyenne | ❌ À construire |
+| 14 | Tests : règles métier couvertes, mais pas encore de test « chaque page s'affiche » ; test d'exemple Laravel en échec | 🟠 Moyenne | ⚠️ En cours |
 | 15 | 5 erreurs PHPStan restantes (méthode inexistante, import manquant, retour manquant...) | 🟡 Faible | ❌ À corriger |
+| 16 | Contrôle prix devis / prix tarif : le code et le message d'erreur se contredisent | 🟠 Moyenne | ❌ À faire trancher par le client |
+| 17 | Faute de frappe `hasRole('ateleprodmin')` : `isTelepro` toujours faux dans l'argumentation | 🟡 Faible | ❌ À corriger |
+| 18 | Le rôle `administratif` n'a pas accès à `rattrapage` | 🟡 Faible | ❌ À faire confirmer |
+| 19 | Calcul des commissions dupliqué dans 3 endroits | 🟠 Moyenne | ❌ À factoriser |
+| 20 | `StatsContactsServices` ne respecte pas le suffixe `Service` | 🟡 Faible | ❌ À renommer |
 
 ---
 
@@ -234,11 +239,11 @@ Aucun autre fichier ne les référence.
 
 ---
 
-## 14. Pas de vrais tests
+## 14. Tests
 
-**Constat :** seuls les deux tests d'exemple de Laravel existent. Celui de `tests/Feature/ExampleTest.php` échoue, car `/` redirige vers `/login` (302 au lieu de 200).
+**Constat :** les règles métier documentées dans `.ai/rules` ont chacune leur test dans `tests/Feature/Regles/`, et `tests/Unit/ArchTest.php` vérifie les conventions de structure du code. Il manque encore un test « chaque page s'affiche ». Le test d'exemple `tests/Feature/ExampleTest.php` échoue toujours, car `/` redirige vers `/login` (302 au lieu de 200).
 
-**À faire :** remplacer les tests d'exemple par des tests utiles, en commençant par un test « chaque page s'affiche pour un admin » (cela aurait détecté le §13). Les tests utilisent la base MySQL `testing` de Sail.
+**À faire :** remplacer le test d'exemple par un test « chaque page s'affiche pour un admin » (cela aurait détecté le §13). Les tests utilisent la base MySQL `testing` de Sail.
 
 ---
 
@@ -261,6 +266,46 @@ Aucun autre fichier ne les référence.
 
 ---
 
+## 16. Contrôle prix devis / prix tarif contradictoire
+
+**Constat :** dans `app/Livewire/EditArgumentation.php` (`save()`), l'enregistrement est refusé si `devis_total_ht > tarif_total_ht`, mais le message affiché dit « Le prix devis ne peut pas être **inférieur** au prix tarif ». Soit la condition est inversée, soit le message est faux.
+
+**À faire :** demander au client quelle est la vraie règle (devis jamais au-dessus du tarif, ou jamais en dessous ?), puis corriger le code ou le message. Le comportement actuel est figé par `tests/Feature/Regles/Ventes/PrixDevisTarifTest.php` : mettre à jour la règle (`.ai/rules/ventes-argumentations.md`) et le test en même temps.
+
+---
+
+## 17. Faute de frappe sur le rôle télépro dans l'argumentation
+
+**Constat :** dans `EditArgumentation::mount()`, `$this->isTelepro = $user->hasRole('ateleprodmin')`. Ce rôle n'existe pas : `isTelepro` vaut donc toujours `false`, même pour un téléprospecteur.
+
+**À faire :** vérifier dans la vue `livewire/edit-argumentation.blade.php` ce que `isTelepro` affiche ou masque, puis remplacer par `hasRole('telepro')`. Attention, la correction peut changer ce que voient les télépros : à faire valider.
+
+---
+
+## 18. Le rôle `administratif` n'a pas accès à `rattrapage`
+
+**Constat :** dans `User::getAuthorizedPages()`, tous les rôles reçoivent les pages « toujours accessibles » (`rattrapage`, `horaire`, `formulaire-contact`, `planning-telepro`, `confirmations`), sauf `administratif`, dont la liste est **remplacée** au lieu d'être complétée (`$page_enable = [...]` au lieu de `array_merge`).
+
+**À faire :** faire confirmer si c'est voulu. Si non, utiliser `array_merge` comme pour les autres rôles et mettre à jour `PagesAutoriseesParRoleTest`.
+
+---
+
+## 19. Calcul des commissions dupliqué
+
+**Constat :** les formules de commission sont dans `app/Services/CommissionService.php`, mais une partie est recopiée dans `app/Livewire/VentesCommissions/Ventes.php` et dans `resources/views/livewire/ventes-commissions/vente.blade.php` (« legacy logic »). Une correction faite à un endroit peut être oubliée ailleurs, et les tests ne couvrent que le service.
+
+**À faire :** faire appeler `CommissionService` par le composant et la vue, puis supprimer les copies. Les tests `tests/Feature/Regles/Commissions/` protègent les formules pendant ce travail.
+
+---
+
+## 20. `StatsContactsServices` mal nommé
+
+**Constat :** `app/Services/StatsContactsServices.php` est la seule classe du dossier sans le suffixe `Service`. Elle est exclue de la règle correspondante dans `tests/Unit/ArchTest.php`.
+
+**À faire :** la renommer en `StatsContactsService` (2 usages : `MapController.php` et `old_Map.php`, ce dernier étant à supprimer, §11), puis retirer l'exception de l'`ArchTest`.
+
+---
+
 ## Ordre d'action recommandé
 
 1. Changer le mot de passe MySQL OVH (§1) et régénérer la clé Spot-Hit (§3)
@@ -268,4 +313,6 @@ Aucun autre fichier ne les référence.
 3. Supprimer les scripts de `public/` sur le serveur de prod (§2, §7)
 4. Mettre en place le scheduler et le cron (§6)
 5. Corriger les pages en erreur 500 (§13)
-6. Vérifier Telescope, faire le ménage (§9 à §11), corriger les erreurs PHPStan (§15), écrire des tests (§14)
+6. Faire trancher le client sur le prix devis/tarif et l'accès `administratif` (§16, §18)
+7. Vérifier Telescope, faire le ménage (§9 à §11, §17, §20), corriger les erreurs PHPStan (§15), compléter les tests (§14)
+8. Factoriser le calcul des commissions (§19)
