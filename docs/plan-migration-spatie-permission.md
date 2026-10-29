@@ -9,7 +9,7 @@
 ## 0. Principes
 
 1. **On ne change pas le comportement pendant la migration.** Les bugs et incohérences connus (voir §9) sont corrigés à part, comme décisions métier distinctes.
-2. **On commence par un filet de tests.** Aujourd'hui, le projet n'a aucun test sur les droits (`tests/` ne contient que les `ExampleTest`).
+2. **On commence par un filet de tests.** Les règles d'accès actuelles sont couvertes par `tests/Feature/Regles/AccesDroits/` : ces tests doivent passer avant et après la migration.
 3. **On centralise d'abord, on change de moteur ensuite.** Tout le code doit passer par un point unique avant qu'on remplace ce qu'il y a derrière.
 4. **On fait tourner les deux systèmes en parallèle** (mode « ombre ») avant de basculer : Spatie calcule, l'ancien système décide, et chaque différence est journalisée.
 5. **On garde les colonnes `users.role`, `directeur` et `telepro` jusqu'à la dernière phase.** Elles servent de solution de retour arrière.

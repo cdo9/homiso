@@ -25,7 +25,7 @@ Ce document liste les problèmes **restant à traiter** dans le code récupéré
 | 11 | Anciens fichiers laissés dans `app/` (`_TableauChiffres.php`, `old_Map.php`) | 🟡 Faible | ❌ À supprimer |
 | 12 | Paquets inutiles : `yoeunes/toastr` (paquet vide) et `ovh/ovh` (jamais utilisé) | 🟡 Faible | ✅ Retirés |
 | 13 | 4 pages en erreur 500 (commissions, gestion-commerciaux, rattrapage, tableau-chiffres) | 🔴 Élevée | ❌ À analyser |
-| 14 | Tests : règles métier couvertes, mais pas encore de test « chaque page s'affiche » ; test d'exemple Laravel en échec | 🟠 Moyenne | ⚠️ En cours |
+| 14 | Tests : règles métier couvertes, mais pas encore de test « chaque page s'affiche » | 🟠 Moyenne | ⚠️ En cours |
 | 15 | 5 erreurs PHPStan restantes (méthode inexistante, import manquant, retour manquant...) | 🟡 Faible | ❌ À corriger |
 | 16 | Contrôle prix devis / prix tarif : le code et le message d'erreur se contredisent | 🟠 Moyenne | ❌ À faire trancher par le client |
 | 17 | Faute de frappe `hasRole('ateleprodmin')` : `isTelepro` toujours faux dans l'argumentation | 🟡 Faible | ❌ À corriger |
@@ -241,9 +241,9 @@ Aucun autre fichier ne les référence.
 
 ## 14. Tests
 
-**Constat :** les règles métier documentées dans `.ai/rules` ont chacune leur test dans `tests/Feature/Regles/`, et `tests/Unit/ArchTest.php` vérifie les conventions de structure du code. Il manque encore un test « chaque page s'affiche ». Le test d'exemple `tests/Feature/ExampleTest.php` échoue toujours, car `/` redirige vers `/login` (302 au lieu de 200).
+**Constat :** les règles métier documentées dans `.ai/rules` ont chacune leur test dans `tests/Feature/Regles/`, et `tests/Unit/ArchTest.php` vérifie les conventions de structure du code. Il manque encore un test « chaque page s'affiche ». Les tests d'exemple de Laravel (`ExampleTest`) ont été supprimés : celui de `tests/Feature` échouait, car `/` redirige vers `/login`.
 
-**À faire :** remplacer le test d'exemple par un test « chaque page s'affiche pour un admin » (cela aurait détecté le §13). Les tests utilisent la base MySQL `testing` de Sail.
+**À faire :** écrire un test « chaque page s'affiche pour un admin » (cela aurait détecté le §13). Les tests utilisent la base MySQL `testing` de Sail.
 
 ---
 
