@@ -12,6 +12,7 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           crossorigin="anonymous" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    @livewireStyles
 </head>
 
 <body class="min-h-screen flex flex-col bg-[#F3F3F3]">
@@ -42,5 +43,8 @@
         toastr.success("{{ session('success') }}");
     </script>
 @endif
+
+{{-- Charge Livewire et Alpine.js (inclus dans Livewire) sur toutes les pages --}}
+@livewireScripts
 </body>
 </html>
