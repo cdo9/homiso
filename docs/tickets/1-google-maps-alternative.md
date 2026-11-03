@@ -44,7 +44,7 @@ Changements de comportement apportés par le nettoyage de `/nouveau-contact` :
 
 ## Reste à faire
 
-- [ ] `/map` : remplacer la SearchBox par `<x-address-search>` (ajouter une option pour recentrer la carte)
+- [ ] `/map` : remplacer la SearchBox par `<x-address-search>` (écouter `address-selected` pour recentrer la carte et poser le marqueur)
 - [ ] `/map` : remplacer le `Geocoder` par l'API Adresse (`/search` et `/reverse`)
 - [ ] `/map` : passer la carte sur Leaflet + IGN (marqueurs, popups, formulaire « Nouveau client », zones, chargement des points au déplacement, préférences `mapType`)
 - [ ] `/map` : rapatrier les icônes `maps.google.com/mapfiles/` dans `public/`
@@ -57,3 +57,10 @@ Changements de comportement apportés par le nettoyage de `/nouveau-contact` :
 - Leaflet est une nouvelle dépendance front (à valider).
 - Le formulaire dans la popup de la carte est le passage le plus délicat à reproduire.
 - Les préférences enregistrées (`mapType` = `hybrid`, `roadmap`…) doivent être converties vers les couches Leaflet.
+- Le formulaire « Nouveau client » de `/map` enregistre via `ClientController::storeNouveauContact` (AJAX), comme `/nouveau-contact`, avec le contrôle de distance GPS (`user_lat`, `user_lng`, `user_acc`), les alertes et la détection de doublon. Il faut garder ces champs lors de la migration.
+
+## Hors ticket : à créer en tickets séparés
+
+- **Sécuriser l'édition d'un contact** (prioritaire) : `/nouveau-contact?client_id=X` permet à n'importe quel commercial de modifier n'importe quel client, ce qui contredit la règle « Édition d'un contact » (`.ai/rules/acces-droits.md`), pourtant appliquée dans `EditContact`. La corriger change ce que voient certains utilisateurs : à valider.
+- **Refonte de « Nouveau contact » en Livewire** : extraire d'abord la logique d'enregistrement de `storeNouveauContact` dans une classe commune (partagée avec `/map`), puis migrer la page. Pas fait dans ce ticket.
+- **Renommage progressif en anglais** (vues, routes, modèles, BDD), par lots : vues et classes d'abord, routes ensuite (listes de pages par rôle dans `User::getAuthorizedPages()`, redirections), tables et colonnes en dernier. Prévoir un glossaire métier avant (Client/Customer, RendezVous/Appointment, Pose/Installation…).
